@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Basketball, Users, Trophy, Zap } from 'lucide-react';
+import { Circle, Users, Trophy, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
@@ -12,7 +12,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-basketball-orange to-orange-600 rounded-lg flex items-center justify-center">
-                <Basketball className="w-6 h-6 text-white" />
+                <Circle className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-basketball-dark">
                 Basketball Team Builder
@@ -73,7 +73,7 @@ export default function Home() {
           <Card className="hover:shadow-lg transition-all duration-300 border-green-200">
             <CardHeader>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <Basketball className="w-6 h-6 text-basketball-court" />
+                <Circle className="w-6 h-6 text-basketball-court" />
               </div>
               <CardTitle>Team Builder</CardTitle>
               <CardDescription>
