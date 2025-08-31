@@ -14,9 +14,9 @@ A modern web application that allows users to build basketball teams from player
 ### Phase 2: Player Management & Team Building
 - [x] **Player Database Interface** - Browse and search players
 - [x] **Player Cards Component** - Beautiful card design with player stats
-- [ ] **Drag & Drop Team Builder** - Interactive team selection interface
-- [ ] **Team Management** - Save, load, and manage multiple teams
-- [ ] **Position Assignment** - Assign players to specific positions
+- [x] **Drag & Drop Team Builder** - Interactive team selection interface
+- [x] **Team Management** - Save, load, and manage multiple teams
+- [x] **Position Assignment** - Assign players to specific positions
 
 ### Phase 3: Match Simulation Engine
 - [ ] **Simulation Algorithm** - Stats-based match outcome calculation
@@ -148,10 +148,10 @@ CREATE TABLE matches (
 - [x] Implement player statistics display
 
 ### Week 3: Team Building
-- [ ] Create drag-and-drop team builder
-- [ ] Implement team management (save/load)
-- [ ] Add position assignment logic
-- [ ] Create team validation rules
+- [x] Create drag-and-drop team builder
+- [x] Implement team management (save/load)
+- [x] Add position assignment logic
+- [x] Create team validation rules
 
 ### Week 4: Simulation Engine
 - [ ] Implement basic simulation algorithm
