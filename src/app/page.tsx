@@ -1,102 +1,150 @@
-import Image from "next/image";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Basketball, Users, Trophy, Zap } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-basketball-gray via-white to-orange-50">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-orange-200 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-basketball-orange to-orange-600 rounded-lg flex items-center justify-center">
+                <Basketball className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-basketball-dark">
+                Basketball Team Builder
+              </h1>
+            </div>
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link href="/players" className="text-gray-600 hover:text-basketball-orange transition-colors">
+                Players
+              </Link>
+              <Link href="/teams" className="text-gray-600 hover:text-basketball-orange transition-colors">
+                Teams
+              </Link>
+              <Link href="/matches" className="text-gray-600 hover:text-basketball-orange transition-colors">
+                Matches
+              </Link>
+            </nav>
+          </div>
+        </div>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Hero Section */}
+      <main className="container mx-auto px-4 py-12">
+        <div className="text-center mb-16">
+          <h2 className="text-5xl md:text-6xl font-bold text-basketball-dark mb-6">
+            Build Your Dream
+            <span className="text-basketball-orange"> Basketball Team</span>
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            Create teams from your favorite NBA players, simulate epic matches, and experience 
+            AI-powered play-by-play commentary. Just like your sports cards, but digital!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="basketball" className="text-lg px-8 py-3">
+              <Users className="w-5 h-5 mr-2" />
+              Start Building Teams
+            </Button>
+            <Button size="lg" variant="outline" className="text-lg px-8 py-3">
+              <Trophy className="w-5 h-5 mr-2" />
+              View Matches
+            </Button>
+          </div>
+        </div>
+
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <Card className="hover:shadow-lg transition-all duration-300 border-orange-200">
+            <CardHeader>
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-basketball-orange" />
+              </div>
+              <CardTitle>Player Database</CardTitle>
+              <CardDescription>
+                Browse thousands of NBA players with detailed statistics and performance metrics
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all duration-300 border-green-200">
+            <CardHeader>
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <Basketball className="w-6 h-6 text-basketball-court" />
+              </div>
+              <CardTitle>Team Builder</CardTitle>
+              <CardDescription>
+                Drag and drop players to create balanced teams with position assignments
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all duration-300 border-blue-200">
+            <CardHeader>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <Zap className="w-6 h-6 text-basketball-blue" />
+              </div>
+              <CardTitle>AI Simulation</CardTitle>
+              <CardDescription>
+                Experience realistic match simulations with AI-generated play-by-play commentary
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {/* Stats Section */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
+          <h3 className="text-3xl font-bold text-center text-basketball-dark mb-8">
+            Ready to Play?
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold text-basketball-orange mb-2">500+</div>
+              <div className="text-gray-600">NBA Players</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-basketball-court mb-2">5</div>
+              <div className="text-gray-600">Positions</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-basketball-blue mb-2">∞</div>
+              <div className="text-gray-600">Team Combinations</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-purple-600 mb-2">AI</div>
+              <div className="text-gray-600">Powered Commentary</div>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="text-center">
+          <Card className="bg-gradient-to-r from-basketball-orange to-orange-600 text-white border-0">
+            <CardContent className="p-12">
+              <h3 className="text-3xl font-bold mb-4">
+                Start Your Basketball Journey Today
+              </h3>
+              <p className="text-xl mb-8 opacity-90">
+                Build teams, simulate matches, and experience the excitement of basketball like never before!
+              </p>
+              <Button size="lg" variant="secondary" className="text-lg px-8 py-3">
+                Get Started Now
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="bg-basketball-dark text-white py-8 mt-16">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-gray-300">
+            © 2024 Basketball Team Builder. Built with Next.js, TypeScript, and ❤️
+          </p>
+        </div>
       </footer>
     </div>
   );

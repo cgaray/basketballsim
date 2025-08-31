@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id                    Int      @id @default(autoincrement())
+  name                  String
+  position              String
+  team                  String?
+  season                Int?
+  gamesPlayed           Int?
+  pointsPerGame         Float?
+  reboundsPerGame       Float?
+  assistsPerGame        Float?
+  stealsPerGame         Float?
+  blocksPerGame         Float?
+  fieldGoalPercentage   Float?
+  threePointPercentage  Float?
+  freeThrowPercentage   Float?
+  imageUrl              String?
+  createdAt             DateTime @default(now())
+
+  @@map("players")
+}
+
+model Team {
+  id        Int      @id @default(autoincrement())
+  name      String
+  userId    String?
+  players   String   // JSON array of player IDs
+  createdAt DateTime @default(now())
+
+  @@map("teams")
+}
+
+model Match {
+  id          Int      @id @default(autoincrement())
+  team1Id     Int
+  team2Id     Int
+  team1Score  Int
+  team2Score  Int
+  winnerId    Int?
+  playByPlay  String?  // JSON string of play-by-play data
+  createdAt   DateTime @default(now())
+
+  @@map("matches")
+}
