@@ -5,7 +5,6 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trophy, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
@@ -32,27 +31,27 @@ export function YearSelector({
     }
   };
 
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const year = parseInt(event.target.value);
+    onYearChange(year);
+  };
+
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <Calendar className="w-4 h-4 text-gray-500" />
       
-      <Select value={selectedYear.toString()} onValueChange={(value) => onYearChange(parseInt(value))}>
-        <SelectTrigger className="w-32">
-          <SelectValue placeholder="Select year" />
-        </SelectTrigger>
-        <SelectContent>
-          {sortedYears.map((year) => (
-            <SelectItem key={year} value={year.toString()}>
-              <div className="flex items-center gap-2">
-                {year}
-                {year === bestYear && (
-                  <Trophy className="w-3 h-3 text-yellow-500" />
-                )}
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <select
+        value={selectedYear}
+        onChange={handleSelectChange}
+        className="w-32 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-basketball-orange focus:border-transparent"
+      >
+        {sortedYears.map((year) => (
+          <option key={year} value={year}>
+            {year}
+            {year === bestYear ? ' ⭐' : ''}
+          </option>
+        ))}
+      </select>
 
       {bestYear && bestYear !== selectedYear && (
         <Button

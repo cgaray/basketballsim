@@ -24,6 +24,7 @@ export default function PlayersPage() {
     limit: 20,
     total: 0,
   });
+  const [playerGroups, setPlayerGroups] = useState<Record<string, Player[]>>({});
   const [playerYears, setPlayerYears] = useState<Record<string, { availableYears: number[]; bestYear: number; selectedYear: number }>>({});
 
   const fetchPlayers = async (searchFilters: SearchFilters = {}, page: number = 1) => {
@@ -47,6 +48,16 @@ export default function PlayersPage() {
       const data: PlayerSearchResult = result.data;
       setPlayers(data.players);
       setPagination(data.pagination);
+
+      // Group players by name for year selection
+      const groups: Record<string, Player[]> = {};
+      data.players.forEach(player => {
+        if (!groups[player.name]) {
+          groups[player.name] = [];
+        }
+        groups[player.name].push(player);
+      });
+      setPlayerGroups(groups);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Error fetching players:', err);
@@ -156,38 +167,38 @@ export default function PlayersPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-              {players.map((player) => {
-                // Get all seasons for this player
-                const playerSeasons = players.filter(p => p.name === player.name);
+              {Object.entries(playerGroups).map(([playerName, playerSeasons]) => {
                 const yearAnalysis = analyzePlayerYears(playerSeasons);
                 
                 // Initialize player years data if not exists
-                if (!playerYears[player.name]) {
+                if (!playerYears[playerName]) {
                   setPlayerYears(prev => ({
                     ...prev,
-                    [player.name]: {
+                    [playerName]: {
                       availableYears: yearAnalysis.availableYears,
                       bestYear: yearAnalysis.bestYear,
-                      selectedYear: yearAnalysis.availableYears[0] || player.season || 2023,
+                      selectedYear: yearAnalysis.availableYears[0] || playerSeasons[0]?.season || 2023,
                     },
                   }));
                 }
 
-                const currentYearData = playerYears[player.name];
+                const currentYearData = playerYears[playerName];
                 const displayPlayer = currentYearData 
-                  ? getPlayerForYear(playerSeasons, currentYearData.selectedYear) || player
-                  : player;
+                  ? getPlayerForYear(playerSeasons, currentYearData.selectedYear) || playerSeasons[0]
+                  : playerSeasons[0];
+
+                if (!displayPlayer) return null;
 
                 return (
                   <PlayerCard
-                    key={`${player.id}-${displayPlayer.season}`}
+                    key={`${playerName}-${displayPlayer.season}`}
                     player={displayPlayer}
                     showActions={false}
                     showYearSelector={yearAnalysis.availableYears.length > 1}
                     availableYears={yearAnalysis.availableYears}
                     selectedYear={currentYearData?.selectedYear}
                     bestYear={yearAnalysis.bestYear}
-                    onYearChange={(year) => handleYearChange(player.name, year)}
+                    onYearChange={(year) => handleYearChange(playerName, year)}
                   />
                 );
               })}
