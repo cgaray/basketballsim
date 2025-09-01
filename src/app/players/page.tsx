@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Circle, Users, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Player, SearchFilters, PlayerSearchResult } from '@/types';
+import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -23,6 +24,7 @@ export default function PlayersPage() {
     limit: 20,
     total: 0,
   });
+  const [playerYears, setPlayerYears] = useState<Record<string, { availableYears: number[]; bestYear: number; selectedYear: number }>>({});
 
   const fetchPlayers = async (searchFilters: SearchFilters = {}, page: number = 1) => {
     try {
@@ -69,6 +71,16 @@ export default function PlayersPage() {
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, page: newPage }));
     fetchPlayers(filters, newPage);
+  };
+
+  const handleYearChange = (playerName: string, year: number) => {
+    setPlayerYears(prev => ({
+      ...prev,
+      [playerName]: {
+        ...prev[playerName],
+        selectedYear: year,
+      },
+    }));
   };
 
   const totalPages = Math.ceil(pagination.total / pagination.limit);
@@ -144,13 +156,41 @@ export default function PlayersPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-              {players.map((player) => (
-                <PlayerCard
-                  key={player.id}
-                  player={player}
-                  showActions={false}
-                />
-              ))}
+              {players.map((player) => {
+                // Get all seasons for this player
+                const playerSeasons = players.filter(p => p.name === player.name);
+                const yearAnalysis = analyzePlayerYears(playerSeasons);
+                
+                // Initialize player years data if not exists
+                if (!playerYears[player.name]) {
+                  setPlayerYears(prev => ({
+                    ...prev,
+                    [player.name]: {
+                      availableYears: yearAnalysis.availableYears,
+                      bestYear: yearAnalysis.bestYear,
+                      selectedYear: yearAnalysis.availableYears[0] || player.season || 2023,
+                    },
+                  }));
+                }
+
+                const currentYearData = playerYears[player.name];
+                const displayPlayer = currentYearData 
+                  ? getPlayerForYear(playerSeasons, currentYearData.selectedYear) || player
+                  : player;
+
+                return (
+                  <PlayerCard
+                    key={`${player.id}-${displayPlayer.season}`}
+                    player={displayPlayer}
+                    showActions={false}
+                    showYearSelector={yearAnalysis.availableYears.length > 1}
+                    availableYears={yearAnalysis.availableYears}
+                    selectedYear={currentYearData?.selectedYear}
+                    bestYear={yearAnalysis.bestYear}
+                    onYearChange={(year) => handleYearChange(player.name, year)}
+                  />
+                );
+              })}
             </div>
 
             {/* Pagination */}
