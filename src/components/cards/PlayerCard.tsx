@@ -16,7 +16,7 @@ import {
   calculatePlayerEfficiency 
 } from '@/lib/utils/format';
 import { getPlayerImage, PlayerImageData } from '@/lib/utils/player-images';
-import { Circle, Plus, X, Star } from 'lucide-react';
+import { Circle, Plus, X, Star, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { YearSelector } from '@/components/ui/year-selector';
 
@@ -152,20 +152,23 @@ export function PlayerCard({
         </h3>
 
         {/* Season Info and Year Selector */}
-        <div className="mb-3">
+        <div className="mb-3 bg-gray-50 rounded-lg p-2">
           {showYearSelector && availableYears.length > 1 ? (
             <YearSelector
               availableYears={availableYears}
               selectedYear={selectedYear || player.season || 2023}
               onYearChange={onYearChange || (() => {})}
               bestYear={bestYear}
-              className="mb-2"
+              className="mb-1"
             />
           ) : (
             player.season && (
-              <p className="text-xs text-gray-600">
-                Season {player.season} • {player.gamesPlayed || 0} GP
-              </p>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <p className="text-xs text-gray-600">
+                  Season {player.season} • {player.gamesPlayed || 0} GP
+                </p>
+              </div>
             )
           )}
         </div>
