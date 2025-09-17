@@ -20,25 +20,31 @@ import { cn } from '@/lib/utils/cn';
 interface PlayerCardProps {
   player: Player;
   isSelected?: boolean;
+  selectedTeam?: 1 | 2 | null;
   showActions?: boolean;
   className?: string;
-  onSelect?: (player: Player) => void;
+  onSelectTeam?: (player: Player, teamId: 1 | 2) => void;
   onDeselect?: (player: Player) => void;
 }
 
 export function PlayerCard({
   player,
   isSelected = false,
+  selectedTeam = null,
   showActions = true,
   className,
-  onSelect,
+  onSelectTeam,
   onDeselect,
 }: PlayerCardProps) {
-  const handleClick = () => {
-    if (isSelected && onDeselect) {
+  const handleTeamSelect = (teamId: 1 | 2) => {
+    if (onSelectTeam) {
+      onSelectTeam(player, teamId);
+    }
+  };
+
+  const handleDeselect = () => {
+    if (onDeselect) {
       onDeselect(player);
-    } else if (!isSelected && onSelect) {
-      onSelect(player);
     }
   };
 
@@ -55,15 +61,20 @@ export function PlayerCard({
     return variants[pos as keyof typeof variants] || 'outline';
   };
 
+  const getTeamColorClass = () => {
+    if (selectedTeam === 1) return 'ring-2 ring-blue-500 bg-blue-50';
+    if (selectedTeam === 2) return 'ring-2 ring-green-500 bg-green-50';
+    return '';
+  };
+
   return (
     <Card
       className={cn(
-        'transition-all duration-200 cursor-pointer',
+        'transition-all duration-200',
         'hover:shadow-md',
-        isSelected && 'ring-2 ring-primary bg-primary/5',
+        isSelected && getTeamColorClass(),
         className
       )}
-      onClick={handleClick}
     >
       <CardContent className="p-4">
         {/* Header with Name and Position */}
@@ -71,9 +82,18 @@ export function PlayerCard({
           <h3 className="font-bold text-lg text-foreground truncate">
             {formatPlayerName(player.name)}
           </h3>
-          <Badge variant={getPositionBadgeVariant(position)}>
-            {position}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {selectedTeam && (
+              <Badge variant="secondary" className={cn(
+                selectedTeam === 1 ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+              )}>
+                Team {selectedTeam}
+              </Badge>
+            )}
+            <Badge variant={getPositionBadgeVariant(position)}>
+              {position}
+            </Badge>
+          </div>
         </div>
 
         {/* Team */}
@@ -103,29 +123,51 @@ export function PlayerCard({
           </div>
         </div>
 
-        {/* Action Button */}
+        {/* Action Buttons */}
         {showActions && (
-          <Button
-            variant={isSelected ? "destructive" : "default"}
-            size="sm"
-            className="w-full"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClick();
-            }}
-          >
+          <div className="space-y-2">
             {isSelected ? (
-              <>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeselect();
+                }}
+              >
                 <X className="w-4 h-4 mr-1" />
-                Remove
-              </>
+                Remove from Team {selectedTeam}
+              </Button>
             ) : (
-              <>
-                <Plus className="w-4 h-4 mr-1" />
-                Add to Team
-              </>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-300 hover:bg-blue-50 text-blue-700"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleTeamSelect(1);
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Team 1
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-green-300 hover:bg-green-50 text-green-700"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleTeamSelect(2);
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Team 2
+                </Button>
+              </div>
             )}
-          </Button>
+          </div>
         )}
       </CardContent>
     </Card>

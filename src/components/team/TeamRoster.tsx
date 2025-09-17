@@ -20,6 +20,10 @@ interface PositionGroupProps {
   onRemove: (playerId: number) => void;
 }
 
+interface TeamRosterProps {
+  teamId: 1 | 2;
+}
+
 function PositionGroup({ position, players, onRemove }: PositionGroupProps) {
   const positionNames = {
     PG: 'Point Guards',
@@ -68,10 +72,10 @@ function PositionGroup({ position, players, onRemove }: PositionGroupProps) {
   );
 }
 
-export function TeamRoster() {
+export function TeamRoster({ teamId }: TeamRosterProps) {
   const {
-    roster,
-    teamName,
+    team1,
+    team2,
     setTeamName,
     removePlayer,
     clearRoster,
@@ -82,8 +86,12 @@ export function TeamRoster() {
     error,
   } = useTeam();
 
-  const positionCounts = getPositionCount();
-  const isComplete = isValidRoster();
+  const currentTeam = teamId === 1 ? team1 : team2;
+  const roster = currentTeam.roster;
+  const teamName = currentTeam.teamName;
+
+  const positionCounts = getPositionCount(teamId);
+  const isComplete = isValidRoster(teamId);
 
   const groupedPlayers = {
     PG: roster.filter(p => p.position === 'PG'),
@@ -108,7 +116,7 @@ export function TeamRoster() {
           <label className="text-sm font-medium">Team Name</label>
           <Input
             value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
+            onChange={(e) => setTeamName(e.target.value, teamId)}
             placeholder="Enter team name..."
             className="w-full"
           />
@@ -160,7 +168,7 @@ export function TeamRoster() {
                 key={position}
                 position={position}
                 players={groupedPlayers[position]}
-                onRemove={removePlayer}
+                onRemove={(playerId) => removePlayer(playerId, teamId)}
               />
             ))}
           </div>
@@ -176,7 +184,7 @@ export function TeamRoster() {
         {roster.length > 0 && (
           <div className="flex gap-2 pt-4">
             <Button
-              onClick={saveTeam}
+              onClick={() => saveTeam(teamId)}
               disabled={!teamName.trim() || roster.length === 0 || isLoading}
               className="flex-1"
             >
@@ -185,7 +193,7 @@ export function TeamRoster() {
             </Button>
             <Button
               variant="outline"
-              onClick={clearRoster}
+              onClick={() => clearRoster(teamId)}
               disabled={isLoading}
             >
               <Trash2 className="w-4 h-4 mr-2" />

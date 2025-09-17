@@ -16,7 +16,7 @@ import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 import { useTeam } from '@/contexts/TeamContext';
 
 export default function PlayersPage() {
-  const { roster, addPlayer, removePlayer } = useTeam();
+  const { addPlayer, removePlayer, isPlayerInTeam } = useTeam();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,16 +111,19 @@ export default function PlayersPage() {
     }));
   };
 
-  const handlePlayerSelect = (player: Player) => {
-    addPlayer(player);
+  const handlePlayerSelect = (player: Player, teamId: 1 | 2) => {
+    addPlayer(player, teamId);
   };
 
   const handlePlayerDeselect = (player: Player) => {
-    removePlayer(player.id);
+    const playerTeam = isPlayerInTeam(player.id);
+    if (playerTeam) {
+      removePlayer(player.id, playerTeam);
+    }
   };
 
-  const isPlayerInRoster = (playerId: number) => {
-    return roster.some(p => p.id === playerId);
+  const getPlayerTeamStatus = (playerId: number) => {
+    return isPlayerInTeam(playerId);
   };
 
   const totalPages = Math.ceil(pagination.total / pagination.limit);
@@ -219,13 +222,16 @@ export default function PlayersPage() {
 
                 if (!displayPlayer) return null;
 
+                const playerTeam = getPlayerTeamStatus(displayPlayer.id);
+
                 return (
                   <PlayerCard
                     key={`${playerName}-${displayPlayer.season}`}
                     player={displayPlayer}
                     showActions={true}
-                    isSelected={isPlayerInRoster(displayPlayer.id)}
-                    onSelect={handlePlayerSelect}
+                    isSelected={playerTeam !== null}
+                    selectedTeam={playerTeam}
+                    onSelectTeam={handlePlayerSelect}
                     onDeselect={handlePlayerDeselect}
                   />
                 );
