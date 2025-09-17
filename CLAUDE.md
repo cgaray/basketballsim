@@ -28,11 +28,33 @@ This is a Basketball Team Builder & Simulator web application that allows users 
 
 ## Development Workflow
 
-The user prefers working in feature branches with a test-first development approach. When implementing features:
-1. Create a feature branch
-2. Write tests first
-3. Implement the functionality
-4. Commit changes
+**🚨 IMPORTANT: Always use feature branches for development work! 🚨**
+
+The user prefers working in feature branches with a test-first development approach. **NEVER work directly on main branch.**
+
+### Required Workflow for ALL features:
+1. **Create a feature branch** before making any changes:
+   ```bash
+   git checkout -b feature/descriptive-feature-name
+   ```
+2. **Write tests first** (when applicable)
+3. **Implement the functionality**
+4. **Commit changes** with descriptive commit messages
+5. **Test thoroughly** before merging
+
+### Commit Message Format:
+Use conventional commits with the Claude Code footer:
+```
+feat: Brief description of the feature
+
+Detailed description of changes made.
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**⚠️ REMINDER: If you start working and realize you're on main, immediately create a feature branch and move your changes there before continuing.**
 
 ## Essential Commands
 
