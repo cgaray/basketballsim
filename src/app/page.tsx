@@ -1,32 +1,29 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Circle, Users, Trophy, Zap } from 'lucide-react';
+import { Users, Search } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+      <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                <Circle className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary-foreground" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-xl font-bold text-foreground">
                 Basketball Team Builder
               </h1>
             </div>
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/players" className="text-muted-foreground hover:text-primary transition-colors">
-                Players
+            <nav className="flex items-center space-x-6">
+              <Link href="/players" className="text-muted-foreground hover:text-foreground transition-colors">
+                Browse Players
               </Link>
-              <Link href="/teams" className="text-muted-foreground hover:text-primary transition-colors">
-                Teams
-              </Link>
-              <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors">
-                Matches
+              <Link href="/teams" className="text-muted-foreground hover:text-foreground transition-colors">
+                Build Teams
               </Link>
             </nav>
           </div>
@@ -34,115 +31,83 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <main className="container mx-auto px-4 py-12">
-        <div className="text-center mb-16">
-          <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
-            Build Your Dream
-            <span className="text-primary"> Basketball Team</span>
+      <main className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+            Build Your Dream Basketball Team
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Create teams from your favorite NBA players, simulate epic matches, and experience 
-            AI-powered play-by-play commentary. Just like your sports cards, but digital!
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+            Browse NBA players, create balanced teams, and build your perfect lineup.
+            Simple, clean, and focused on what matters most.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="default" className="text-lg px-8 py-3">
-              <Users className="w-5 h-5 mr-2" />
-              Start Building Teams
-            </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-3">
-              <Trophy className="w-5 h-5 mr-2" />
-              View Matches
-            </Button>
+            <Link href="/players">
+              <Button size="lg" className="text-lg px-8 py-3">
+                <Search className="w-5 h-5 mr-2" />
+                Browse Players
+              </Button>
+            </Link>
+            <Link href="/teams">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-3">
+                <Users className="w-5 h-5 mr-2" />
+                Build Teams
+              </Button>
+            </Link>
           </div>
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <Card className="hover:shadow-lg transition-all duration-300 border-border">
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <Search className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle>Browse Players</CardTitle>
+              <CardDescription>
+                Search through NBA players by name and position. View essential stats like PPG, RPG, and APG.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                 <Users className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle>Player Database</CardTitle>
+              <CardTitle>Build Teams</CardTitle>
               <CardDescription>
-                Browse thousands of NBA players with detailed statistics and performance metrics
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-all duration-300 border-green-200">
-            <CardHeader>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <Circle className="w-6 h-6 text-emerald-600" />
-              </div>
-              <CardTitle>Team Builder</CardTitle>
-              <CardDescription>
-                Drag and drop players to create balanced teams with position assignments
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-all duration-300 border-blue-200">
-            <CardHeader>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-blue-600" />
-              </div>
-              <CardTitle>AI Simulation</CardTitle>
-              <CardDescription>
-                Experience realistic match simulations with AI-generated play-by-play commentary
+                Create balanced teams by adding players with simple button clicks. Focus on what matters most.
               </CardDescription>
             </CardHeader>
           </Card>
         </div>
 
-        {/* Stats Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
-          <h3 className="text-3xl font-bold text-center text-foreground mb-8">
-            Ready to Play?
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold text-primary mb-2">500+</div>
-              <div className="text-muted-foreground">NBA Players</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-emerald-600 mb-2">5</div>
-              <div className="text-muted-foreground">Positions</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-600 mb-2">∞</div>
-              <div className="text-muted-foreground">Team Combinations</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-purple-600 mb-2">AI</div>
-              <div className="text-muted-foreground">Powered Commentary</div>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Section */}
+        {/* Simple CTA */}
         <div className="text-center">
-          <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0">
-            <CardContent className="p-12">
-              <h3 className="text-3xl font-bold mb-4">
-                Start Your Basketball Journey Today
+          <Card className="border">
+            <CardContent className="p-8">
+              <h3 className="text-2xl font-bold mb-4 text-foreground">
+                Ready to Build Your Team?
               </h3>
-              <p className="text-xl mb-8 opacity-90">
-                Build teams, simulate matches, and experience the excitement of basketball like never before!
+              <p className="text-muted-foreground mb-6">
+                Start by browsing our database of NBA players and create your perfect lineup.
               </p>
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-3">
-                Get Started Now
-              </Button>
+              <Link href="/players">
+                <Button size="lg" className="text-lg px-8 py-3">
+                  Get Started
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-foreground text-white py-8 mt-16">
+      <footer className="border-t mt-16 py-8">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-slate-300">
-            © 2025 Basketball Team Builder. Built with Next.js, TypeScript, and ❤️
+          <p className="text-muted-foreground text-sm">
+            © 2025 Basketball Team Builder. Built with Next.js and TypeScript.
           </p>
         </div>
       </footer>
