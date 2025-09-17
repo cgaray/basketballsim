@@ -7,6 +7,9 @@ import React, { useState, useEffect } from 'react';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
 import { PlayerCard } from '@/components/cards/PlayerCard';
 import { Player, Position } from '@/types';
 import { useTeamBuilder, TeamValidationResult } from '@/hooks/useTeamBuilder';
@@ -37,39 +40,39 @@ export function TeamRoster({
     setIsMounted(true);
   }, []);
 
-  const getPositionColor = (position: Position) => {
-    const colors = {
-      PG: 'bg-blue-100 text-blue-800',
-      SG: 'bg-green-100 text-green-800',
-      SF: 'bg-purple-100 text-purple-800',
-      PF: 'bg-orange-100 text-orange-800',
-      C: 'bg-red-100 text-red-800',
+  const getPositionBadgeVariant = (position: Position): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    const variants = {
+      PG: 'default' as const,
+      SG: 'secondary' as const,
+      SF: 'outline' as const,
+      PF: 'destructive' as const,
+      C: 'default' as const,
     };
-    return colors[position] || 'bg-gray-100 text-gray-800';
+    return variants[position] || 'outline';
   };
 
-  const getTeamColor = () => {
-    return teamId === 1 ? 'border-basketball-orange' : 'border-basketball-court';
+  const getTeamBorder = () => {
+    return teamId === 1 ? 'border-primary' : 'border-emerald-600';
   };
 
   // Render a placeholder during SSR to prevent hydration mismatch
   if (!isMounted) {
     return (
-      <Card className={`h-full ${getTeamColor()} border-2`}>
+      <Card className={`h-full ${getTeamBorder()} border-2`}>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-gray-600" />
+              <Users className="w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
                 value={teamName}
                 onChange={(e) => onTeamNameChange(e.target.value)}
-                className="text-xl font-bold bg-transparent border-none outline-none focus:ring-2 focus:ring-basketball-orange rounded px-2 py-1"
+                className="text-xl font-bold bg-transparent border-none outline-none focus:ring-2 focus:ring-primary rounded px-2 py-1"
                 placeholder={`Team ${teamId}`}
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted-foreground">
                 {players.length}/15 players
               </span>
               {validation.isValid ? (
@@ -117,9 +120,9 @@ export function TeamRoster({
         </CardHeader>
 
         <CardContent className="pt-0">
-          <div className="min-h-[400px] bg-gray-50 rounded-lg p-4">
+          <div className="min-h-[400px] bg-muted rounded-lg p-4">
             {players.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-gray-500">
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                 <Users className="w-12 h-12 mb-2" />
                 <p className="text-center">
                   Drop players here to build your team
@@ -157,17 +160,17 @@ export function TeamRoster({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-gray-600" />
+            <Users className="w-5 h-5 text-muted-foreground" />
             <input
               type="text"
               value={teamName}
               onChange={(e) => onTeamNameChange(e.target.value)}
-              className="text-xl font-bold bg-transparent border-none outline-none focus:ring-2 focus:ring-basketball-orange rounded px-2 py-1"
+              className="text-xl font-bold bg-transparent border-none outline-none focus:ring-2 focus:ring-primary rounded px-2 py-1"
               placeholder={`Team ${teamId}`}
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               {players.length}/15 players
             </span>
             {validation.isValid ? (
@@ -222,12 +225,12 @@ export function TeamRoster({
               {...provided.droppableProps}
               className={`min-h-[400px] transition-colors ${
                 snapshot.isDraggingOver
-                  ? 'bg-orange-50 border-2 border-dashed border-basketball-orange'
-                  : 'bg-gray-50'
+                  ? 'bg-primary/5 border-2 border-dashed border-primary'
+                  : 'bg-muted'
               } rounded-lg p-4`}
             >
               {players.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                   <Users className="w-12 h-12 mb-2" />
                   <p className="text-center">
                     Drop players here to build your team

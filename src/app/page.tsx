@@ -5,27 +5,27 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-basketball-gray via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-orange-200 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-basketball-orange to-orange-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
                 <Circle className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-basketball-dark">
+              <h1 className="text-2xl font-bold text-foreground">
                 Basketball Team Builder
               </h1>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/players" className="text-gray-600 hover:text-basketball-orange transition-colors">
+              <Link href="/players" className="text-muted-foreground hover:text-primary transition-colors">
                 Players
               </Link>
-              <Link href="/teams" className="text-gray-600 hover:text-basketball-orange transition-colors">
+              <Link href="/teams" className="text-muted-foreground hover:text-primary transition-colors">
                 Teams
               </Link>
-              <Link href="/matches" className="text-gray-600 hover:text-basketball-orange transition-colors">
+              <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors">
                 Matches
               </Link>
             </nav>
@@ -36,16 +36,16 @@ export default function Home() {
       {/* Hero Section */}
       <main className="container mx-auto px-4 py-12">
         <div className="text-center mb-16">
-          <h2 className="text-5xl md:text-6xl font-bold text-basketball-dark mb-6">
+          <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
             Build Your Dream
-            <span className="text-basketball-orange"> Basketball Team</span>
+            <span className="text-primary"> Basketball Team</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Create teams from your favorite NBA players, simulate epic matches, and experience 
             AI-powered play-by-play commentary. Just like your sports cards, but digital!
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="basketball" className="text-lg px-8 py-3">
+            <Button size="lg" variant="default" className="text-lg px-8 py-3">
               <Users className="w-5 h-5 mr-2" />
               Start Building Teams
             </Button>
@@ -58,10 +58,10 @@ export default function Home() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <Card className="hover:shadow-lg transition-all duration-300 border-orange-200">
+          <Card className="hover:shadow-lg transition-all duration-300 border-border">
             <CardHeader>
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-basketball-orange" />
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-primary" />
               </div>
               <CardTitle>Player Database</CardTitle>
               <CardDescription>
@@ -73,7 +73,7 @@ export default function Home() {
           <Card className="hover:shadow-lg transition-all duration-300 border-green-200">
             <CardHeader>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <Circle className="w-6 h-6 text-basketball-court" />
+                <Circle className="w-6 h-6 text-emerald-600" />
               </div>
               <CardTitle>Team Builder</CardTitle>
               <CardDescription>
@@ -85,7 +85,7 @@ export default function Home() {
           <Card className="hover:shadow-lg transition-all duration-300 border-blue-200">
             <CardHeader>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-basketball-blue" />
+                <Zap className="w-6 h-6 text-blue-600" />
               </div>
               <CardTitle>AI Simulation</CardTitle>
               <CardDescription>
@@ -97,32 +97,32 @@ export default function Home() {
 
         {/* Stats Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
-          <h3 className="text-3xl font-bold text-center text-basketball-dark mb-8">
+          <h3 className="text-3xl font-bold text-center text-foreground mb-8">
             Ready to Play?
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-3xl font-bold text-basketball-orange mb-2">500+</div>
-              <div className="text-gray-600">NBA Players</div>
+              <div className="text-3xl font-bold text-primary mb-2">500+</div>
+              <div className="text-muted-foreground">NBA Players</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-basketball-court mb-2">5</div>
-              <div className="text-gray-600">Positions</div>
+              <div className="text-3xl font-bold text-emerald-600 mb-2">5</div>
+              <div className="text-muted-foreground">Positions</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-basketball-blue mb-2">∞</div>
-              <div className="text-gray-600">Team Combinations</div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">∞</div>
+              <div className="text-muted-foreground">Team Combinations</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-purple-600 mb-2">AI</div>
-              <div className="text-gray-600">Powered Commentary</div>
+              <div className="text-muted-foreground">Powered Commentary</div>
             </div>
           </div>
         </div>
 
         {/* CTA Section */}
         <div className="text-center">
-          <Card className="bg-gradient-to-r from-basketball-orange to-orange-600 text-white border-0">
+          <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0">
             <CardContent className="p-12">
               <h3 className="text-3xl font-bold mb-4">
                 Start Your Basketball Journey Today
@@ -139,9 +139,9 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-basketball-dark text-white py-8 mt-16">
+      <footer className="bg-foreground text-white py-8 mt-16">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-300">
+          <p className="text-slate-300">
             © 2024 Basketball Team Builder. Built with Next.js, TypeScript, and ❤️
           </p>
         </div>

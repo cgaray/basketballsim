@@ -67,7 +67,17 @@ npm run lint         # Run ESLint
 npx prisma generate  # Generate Prisma client
 npx prisma db push   # Push schema changes to database
 npx prisma studio    # Open Prisma Studio GUI
+
+# Import real NBA data (DuckDB + SQLite hybrid)
+npx bun run scripts/import-nba-data.ts  # Import from Kaggle dataset
 ```
+
+### Data Source
+The app uses **real NBA historical data** from the Kaggle dataset "Historical NBA Data and Player Box Scores":
+- **1000 player-seasons** (2018-2024)
+- **294 unique players** with actual game statistics
+- Data processed using DuckDB for aggregation, stored in SQLite
+- CSV files located in `data/` directory
 
 ## Architecture Overview
 
@@ -138,3 +148,4 @@ Example: `import { PlayerCard } from '@/components/cards/PlayerCard'`
 - 60fps animations
 - Mobile-responsive
 - WCAG 2.1 AA compliance
+- Use bun
