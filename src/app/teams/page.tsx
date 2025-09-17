@@ -16,6 +16,7 @@ import { PlayerCard } from '@/components/cards/PlayerCard';
 import { Player, PlayerSearchResult } from '@/types';
 import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 import { useTeam } from '@/contexts/TeamContext';
+import { Navbar } from '@/components/layout/Navbar';
 
 export default function TeamsPage() {
   const { addPlayer, removePlayer, isPlayerInTeam } = useTeam();
@@ -100,29 +101,7 @@ export default function TeamsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <h1 className="text-xl font-bold text-foreground">
-                Team Builder
-              </h1>
-            </div>
-            <nav className="flex items-center space-x-6">
-              <Link href="/players" className="text-muted-foreground hover:text-foreground transition-colors">
-                Browse Players
-              </Link>
-              <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
-                Home
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">

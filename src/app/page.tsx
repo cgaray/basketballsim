@@ -2,33 +2,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Search } from 'lucide-react';
 import Link from 'next/link';
+import { Navbar } from '@/components/layout/Navbar';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <h1 className="text-xl font-bold text-foreground">
-                Basketball Team Builder
-              </h1>
-            </div>
-            <nav className="flex items-center space-x-6">
-              <Link href="/players" className="text-muted-foreground hover:text-foreground transition-colors">
-                Browse Players
-              </Link>
-              <Link href="/teams" className="text-muted-foreground hover:text-foreground transition-colors">
-                Build Teams
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero Section */}
       <main className="container mx-auto px-4 py-16">

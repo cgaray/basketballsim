@@ -14,6 +14,7 @@ import { Circle, Users, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { Player, PlayerSearchResult } from '@/types';
 import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 import { useTeam } from '@/contexts/TeamContext';
+import { Navbar } from '@/components/layout/Navbar';
 
 export default function PlayersPage() {
   const { addPlayer, removePlayer, isPlayerInTeam } = useTeam();
@@ -144,31 +145,20 @@ export default function PlayersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-basketball-gray via-white to-orange-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-orange-200 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-basketball-orange to-orange-600 rounded-lg flex items-center justify-center">
-                <Circle className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-basketball-dark">
-                NBA Players Database
-              </h1>
-            </div>
-            <div className="text-sm text-gray-600">
-              {pagination.total > 0 && (
-                <span>
-                  Showing {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} players
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      <Navbar />
 
       <main className="container mx-auto px-4 py-8">
+        {/* Page Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-foreground mb-2">NBA Players Database</h2>
+          {pagination.total > 0 && (
+            <p className="text-muted-foreground">
+              Showing {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} players
+            </p>
+          )}
+        </div>
+
         {/* Search and Filters */}
         <PlayerSearch
           searchTerm={searchTerm}
