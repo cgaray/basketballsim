@@ -142,7 +142,7 @@ export default function Home() {
       <footer className="bg-foreground text-white py-8 mt-16">
         <div className="container mx-auto px-4 text-center">
           <p className="text-slate-300">
-            © 2024 Basketball Team Builder. Built with Next.js, TypeScript, and ❤️
+            © 2025 Basketball Team Builder. Built with Next.js, TypeScript, and ❤️
           </p>
         </div>
       </footer>

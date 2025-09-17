@@ -6,23 +6,19 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { TeamRoster } from '@/components/teams/TeamRoster';
 import { PlayerCard } from '@/components/cards/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTeamBuilder } from '@/hooks/useTeamBuilder';
 import { Player, SearchFilters } from '@/types';
-import { 
-  Circle, 
-  Users, 
-  ArrowRight, 
-  RefreshCw, 
-  Save, 
+import {
+  Users,
+  RefreshCw,
   Play,
   Search,
-  Filter,
-  X
+  X,
+  ArrowRight
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
@@ -80,40 +76,8 @@ export default function TeamBuilderPage() {
     }
   };
 
-  const handleDragEnd = (result: DropResult) => {
-    const { source, destination, draggableId } = result;
-
-    // Dropped outside a valid droppable
-    if (!destination) {
-      return;
-    }
-
-    const playerId = parseInt(draggableId.replace('player-', ''));
-    const player = [...team1.players, ...team2.players, ...availablePlayers].find(p => p.id === playerId);
-
-    if (!player) {
-      return;
-    }
-
-    // Moving from available players to a team
-    if (source.droppableId === 'available-players') {
-      if (destination.droppableId === 'team-1') {
-        addPlayerToTeam(player, 1);
-      } else if (destination.droppableId === 'team-2') {
-        addPlayerToTeam(player, 2);
-      }
-    }
-    // Moving from one team to another
-    else if (source.droppableId.startsWith('team-') && destination.droppableId.startsWith('team-')) {
-      const fromTeam = parseInt(source.droppableId.replace('team-', '')) as 1 | 2;
-      const toTeam = parseInt(destination.droppableId.replace('team-', '')) as 1 | 2;
-      movePlayerBetweenTeams(player, fromTeam, toTeam);
-    }
-    // Moving from team back to available players
-    else if (source.droppableId.startsWith('team-') && destination.droppableId === 'available-players') {
-      const fromTeam = parseInt(source.droppableId.replace('team-', '')) as 1 | 2;
-      removePlayerFromTeam(player, fromTeam);
-    }
+  const handleAddToTeam = (player: Player, teamId: 1 | 2) => {
+    addPlayerToTeam(player, teamId);
   };
 
   const filteredAvailablePlayers = availablePlayers.filter(player =>
@@ -169,7 +133,7 @@ export default function TeamBuilderPage() {
                 Clear All
               </Button>
               <Button
-                variant="basketball"
+                variant="default"
                 disabled={!canStartMatch}
                 className="flex items-center gap-2"
               >
@@ -182,8 +146,7 @@ export default function TeamBuilderPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Available Players */}
             <div className="lg:col-span-1">
               <Card className="h-full">
@@ -218,50 +181,44 @@ export default function TeamBuilderPage() {
                 <CardContent className="pt-0">
                   {loading ? (
                     <div className="flex items-center justify-center py-12">
-                      <RefreshCw className="w-8 h-8 animate-spin text-basketball-orange" />
+                      <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : (
-                    <Droppable droppableId="available-players">
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                          className={`space-y-3 max-h-[600px] overflow-y-auto transition-colors ${
-                            snapshot.isDraggingOver ? 'bg-orange-50' : ''
-                          }`}
-                        >
-                          {filteredAvailablePlayers.map((player, index) => (
-                            <Draggable
-                              key={player.id}
-                              draggableId={`player-${player.id}`}
-                              index={index}
+                    <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                      {filteredAvailablePlayers.map((player) => (
+                        <div key={player.id} className="space-y-2">
+                          <PlayerCard
+                            player={player}
+                            showActions={false}
+                            className="hover:shadow-md transition-shadow"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAddToTeam(player, 1)}
+                              className="flex-1"
                             >
-                              {(provided, snapshot) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  className={`${snapshot.isDragging ? 'opacity-50' : ''}`}
-                                >
-                                  <PlayerCard
-                                    player={player}
-                                    showActions={false}
-                                    className="cursor-move hover:shadow-md transition-shadow"
-                                  />
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-                          {filteredAvailablePlayers.length === 0 && (
-                            <div className="text-center py-8 text-gray-500">
-                              <Users className="w-12 h-12 mx-auto mb-2" />
-                              <p>No players available</p>
-                            </div>
-                          )}
-                          {provided.placeholder}
+                              Add to Team 1
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAddToTeam(player, 2)}
+                              className="flex-1"
+                            >
+                              Add to Team 2
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredAvailablePlayers.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Users className="w-12 h-12 mx-auto mb-2" />
+                          <p>No players available</p>
                         </div>
                       )}
-                    </Droppable>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -290,20 +247,19 @@ export default function TeamBuilderPage() {
               />
             </div>
           </div>
-        </DragDropContext>
+        </div>
 
         {/* Match Status */}
         <div className="mt-8">
-          <Card className="bg-gradient-to-r from-basketball-orange to-orange-600 text-white">
+          <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xl font-bold mb-2">Match Status</h3>
                   <p className="opacity-90">
-                    {canStartMatch 
+                    {canStartMatch
                       ? 'Both teams are ready! You can start the match.'
-                      : 'Complete both teams to start the match.'
-                    }
+                      : 'Complete both teams to start the match.'}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">

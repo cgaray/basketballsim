@@ -11,14 +11,15 @@ import { PlayerCard } from '@/components/cards/PlayerCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Circle, Users, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { Player, SearchFilters, PlayerSearchResult } from '@/types';
+import { Player, PlayerSearchResult } from '@/types';
 import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<SearchFilters>({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPosition, setSelectedPosition] = useState('');
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -27,7 +28,7 @@ export default function PlayersPage() {
   const [playerGroups, setPlayerGroups] = useState<Record<string, Player[]>>({});
   const [playerYears, setPlayerYears] = useState<Record<string, { availableYears: number[]; bestYear: number; selectedYear: number }>>({});
 
-  const fetchPlayers = async (searchFilters: SearchFilters = {}, page: number = 1) => {
+  const fetchPlayers = async (searchTerm: string = '', position: string = '', page: number = 1) => {
     try {
       setLoading(true);
       setError(null);
@@ -35,8 +36,10 @@ export default function PlayersPage() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: pagination.limit.toString(),
-        ...searchFilters,
       });
+
+      if (searchTerm) params.append('search', searchTerm);
+      if (position) params.append('position', position);
 
       const response = await fetch(`/api/players?${params}`);
       const result = await response.json();
@@ -70,18 +73,30 @@ export default function PlayersPage() {
     fetchPlayers();
   }, []);
 
+  // Auto-search when searchTerm or position changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchPlayers(searchTerm, selectedPosition, 1);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, selectedPosition]);
+
   const handleSearch = () => {
     setPagination(prev => ({ ...prev, page: 1 }));
-    fetchPlayers(filters, 1);
+    fetchPlayers(searchTerm, selectedPosition, 1);
   };
 
-  const handleFiltersChange = (newFilters: SearchFilters) => {
-    setFilters(newFilters);
+  const handleClear = () => {
+    setSearchTerm('');
+    setSelectedPosition('');
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchPlayers('', '', 1);
   };
 
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, page: newPage }));
-    fetchPlayers(filters, newPage);
+    fetchPlayers(searchTerm, selectedPosition, newPage);
   };
 
   const handleYearChange = (playerName: string, year: number) => {
@@ -139,10 +154,11 @@ export default function PlayersPage() {
       <main className="container mx-auto px-4 py-8">
         {/* Search and Filters */}
         <PlayerSearch
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          onSearch={handleSearch}
-          isLoading={loading}
+          searchTerm={searchTerm}
+          position={selectedPosition}
+          onSearchChange={setSearchTerm}
+          onPositionChange={setSelectedPosition}
+          onClear={handleClear}
         />
 
         {/* Players Grid */}
@@ -194,11 +210,6 @@ export default function PlayersPage() {
                     key={`${playerName}-${displayPlayer.season}`}
                     player={displayPlayer}
                     showActions={false}
-                    showYearSelector={yearAnalysis.availableYears.length > 1}
-                    availableYears={yearAnalysis.availableYears}
-                    selectedYear={currentYearData?.selectedYear}
-                    bestYear={yearAnalysis.bestYear}
-                    onYearChange={(year) => handleYearChange(playerName, year)}
                   />
                 );
               })}

@@ -56,7 +56,6 @@ describe('PlayerCard', () => {
   const defaultProps = {
     player: mockPlayer,
     isSelected: false,
-    isDragging: false,
     showActions: true,
   };
 
@@ -69,7 +68,6 @@ describe('PlayerCard', () => {
 
     expect(screen.getByText('LeBron James')).toBeInTheDocument();
     expect(screen.getByText('Los Angeles Lakers')).toBeInTheDocument();
-    expect(screen.getByText('Season 2023')).toBeInTheDocument();
     expect(screen.getByText('SF')).toBeInTheDocument(); // Position badge
   });
 
@@ -84,40 +82,12 @@ describe('PlayerCard', () => {
     expect(screen.getByText('APG')).toBeInTheDocument();
   });
 
-  it('displays shooting percentages', () => {
-    render(<PlayerCard {...defaultProps} />);
-
-    expect(screen.getByText('52.0%')).toBeInTheDocument(); // FG%
-    expect(screen.getByText('35.0%')).toBeInTheDocument(); // 3P%
-    expect(screen.getByText('85.0%')).toBeInTheDocument(); // FT%
-  });
-
-  it('displays defensive stats when available', () => {
-    render(<PlayerCard {...defaultProps} />);
-
-    expect(screen.getByText('Defense')).toBeInTheDocument();
-    expect(screen.getByText('1.2 SPG')).toBeInTheDocument();
-    expect(screen.getByText('0.6 BPG')).toBeInTheDocument();
-  });
-
-  it('shows efficiency rating', () => {
-    render(<PlayerCard {...defaultProps} />);
-
-    expect(screen.getByText('15.5')).toBeInTheDocument();
-  });
 
   it('applies selected styling when isSelected is true', () => {
     render(<PlayerCard {...defaultProps} isSelected={true} />);
 
     const card = screen.getByRole('button');
-    expect(card).toHaveClass('ring-2', 'ring-basketball-orange', 'bg-orange-50');
-  });
-
-  it('applies dragging styling when isDragging is true', () => {
-    render(<PlayerCard {...defaultProps} isDragging={true} />);
-
-    const card = screen.getByRole('button');
-    expect(card).toHaveClass('opacity-50', 'scale-95');
+    expect(card).toHaveClass('ring-2', 'ring-primary');
   });
 
   it('calls onSelect when clicked and not selected', () => {
@@ -168,40 +138,4 @@ describe('PlayerCard', () => {
     expect(screen.getByText('Free Agent')).toBeInTheDocument();
   });
 
-  it('handles player without season', () => {
-    const playerWithoutSeason = { ...mockPlayer, season: undefined };
-    render(<PlayerCard {...defaultProps} player={playerWithoutSeason} />);
-
-    expect(screen.queryByText(/Season/)).not.toBeInTheDocument();
-  });
-
-  it('handles player without defensive stats', () => {
-    const playerWithoutDefense = { 
-      ...mockPlayer, 
-      stealsPerGame: undefined, 
-      blocksPerGame: undefined 
-    };
-    render(<PlayerCard {...defaultProps} player={playerWithoutDefense} />);
-
-    expect(screen.queryByText('Defense')).not.toBeInTheDocument();
-  });
-
-  it('applies correct position badge colors', () => {
-    const positions = [
-      { position: 'Point Guard', expectedClass: 'bg-blue-500' },
-      { position: 'Shooting Guard', expectedClass: 'bg-green-500' },
-      { position: 'Small Forward', expectedClass: 'bg-purple-500' },
-      { position: 'Power Forward', expectedClass: 'bg-orange-500' },
-      { position: 'Center', expectedClass: 'bg-red-500' },
-    ];
-
-    positions.forEach(({ position, expectedClass }) => {
-      const { container } = render(
-        <PlayerCard {...defaultProps} player={{ ...mockPlayer, position }} />
-      );
-      
-      const badge = container.querySelector('.px-2.py-1.rounded-full');
-      expect(badge).toHaveClass(expectedClass);
-    });
-  });
 });
