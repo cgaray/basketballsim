@@ -23,14 +23,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<APIRespons
     if (search) {
       where.name = {
         contains: search,
-        mode: 'insensitive' as const,
       };
     }
 
     if (position) {
       where.position = {
         contains: position,
-        mode: 'insensitive' as const,
       };
     }
 

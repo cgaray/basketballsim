@@ -13,8 +13,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Circle, Users, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Player, PlayerSearchResult } from '@/types';
 import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
+import { useTeam } from '@/contexts/TeamContext';
 
 export default function PlayersPage() {
+  const { roster, addPlayer, removePlayer } = useTeam();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +109,18 @@ export default function PlayersPage() {
         selectedYear: year,
       },
     }));
+  };
+
+  const handlePlayerSelect = (player: Player) => {
+    addPlayer(player);
+  };
+
+  const handlePlayerDeselect = (player: Player) => {
+    removePlayer(player.id);
+  };
+
+  const isPlayerInRoster = (playerId: number) => {
+    return roster.some(p => p.id === playerId);
   };
 
   const totalPages = Math.ceil(pagination.total / pagination.limit);
@@ -209,7 +223,10 @@ export default function PlayersPage() {
                   <PlayerCard
                     key={`${playerName}-${displayPlayer.season}`}
                     player={displayPlayer}
-                    showActions={false}
+                    showActions={true}
+                    isSelected={isPlayerInRoster(displayPlayer.id)}
+                    onSelect={handlePlayerSelect}
+                    onDeselect={handlePlayerDeselect}
                   />
                 );
               })}

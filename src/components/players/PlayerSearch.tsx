@@ -18,11 +18,11 @@ interface PlayerSearchProps {
 
 const POSITIONS = [
   { value: '', label: 'All Positions' },
-  { value: 'Point Guard', label: 'Point Guard' },
-  { value: 'Shooting Guard', label: 'Shooting Guard' },
-  { value: 'Small Forward', label: 'Small Forward' },
-  { value: 'Power Forward', label: 'Power Forward' },
-  { value: 'Center', label: 'Center' },
+  { value: 'PG', label: 'Point Guard' },
+  { value: 'SG', label: 'Shooting Guard' },
+  { value: 'SF', label: 'Small Forward' },
+  { value: 'PF', label: 'Power Forward' },
+  { value: 'C', label: 'Center' },
 ];
 
 export function PlayerSearch({

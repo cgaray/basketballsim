@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { TeamProvider } from "@/contexts/TeamContext";
 
 export const metadata: Metadata = {
   title: "Basketball Team Builder & Simulator",
@@ -17,9 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="h-full antialiased bg-gradient-to-br from-basketball-gray to-white">
-        <div className="min-h-screen flex flex-col">
-          {children}
-        </div>
+        <TeamProvider>
+          <div className="min-h-screen flex flex-col">
+            {children}
+          </div>
+        </TeamProvider>
       </body>
     </html>
   );

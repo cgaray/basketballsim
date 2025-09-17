@@ -1,281 +1,161 @@
 /**
- * Team Builder Page
- * Main page for building basketball teams with drag and drop functionality
+ * Teams Page
+ * Main page for building and managing basketball teams
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { TeamRoster } from '@/components/teams/TeamRoster';
-import { PlayerCard } from '@/components/cards/PlayerCard';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { TeamRoster } from '@/components/team/TeamRoster';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useTeamBuilder } from '@/hooks/useTeamBuilder';
-import { Player, SearchFilters } from '@/types';
-import {
-  Users,
-  RefreshCw,
-  Play,
-  Search,
-  X,
-  ArrowRight
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Users, Search, Trophy } from 'lucide-react';
+import Link from 'next/link';
 
-export default function TeamBuilderPage() {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<SearchFilters>({});
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const {
-    team1,
-    team2,
-    availablePlayers,
-    addPlayerToTeam,
-    removePlayerFromTeam,
-    movePlayerBetweenTeams,
-    setTeamName,
-    setAvailablePlayers,
-    getTeamValidation,
-    canAddPlayerToTeam,
-    clearTeam,
-  } = useTeamBuilder();
-
-  // Fetch players on component mount
-  useEffect(() => {
-    fetchPlayers();
-  }, []);
-
-  const fetchPlayers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const params = new URLSearchParams({
-        page: '1',
-        limit: '50',
-        ...filters,
-      });
-
-      const response = await fetch(`/api/players?${params}`);
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch players');
-      }
-
-      setPlayers(result.data.players);
-      setAvailablePlayers(result.data.players);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching players:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddToTeam = (player: Player, teamId: 1 | 2) => {
-    addPlayerToTeam(player, teamId);
-  };
-
-  const filteredAvailablePlayers = availablePlayers.filter(player =>
-    player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    player.team?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    player.position.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const team1Validation = getTeamValidation(1);
-  const team2Validation = getTeamValidation(2);
-
-  const canStartMatch = team1Validation.isValid && team2Validation.isValid;
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="p-6 text-center">
-            <Circle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Error Loading Players</h2>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <Button onClick={fetchPlayers}>Try Again</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
+export default function TeamsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-basketball-gray via-white to-orange-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-orange-200 sticky top-0 z-50">
+      <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-basketball-orange to-orange-600 rounded-lg flex items-center justify-center">
-                <Circle className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-primary-foreground" />
               </div>
-              <h1 className="text-2xl font-bold text-basketball-dark">
+              <h1 className="text-xl font-bold text-foreground">
                 Team Builder
               </h1>
             </div>
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  clearTeam(1);
-                  clearTeam(2);
-                }}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Clear All
-              </Button>
-              <Button
-                variant="default"
-                disabled={!canStartMatch}
-                className="flex items-center gap-2"
-              >
-                <Play className="w-4 h-4" />
-                Start Match
-              </Button>
-            </div>
+            <nav className="flex items-center space-x-6">
+              <Link href="/players" className="text-muted-foreground hover:text-foreground transition-colors">
+                Browse Players
+              </Link>
+              <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
+                Home
+              </Link>
+            </nav>
           </div>
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Available Players */}
-            <div className="lg:col-span-1">
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    Available Players
-                  </CardTitle>
-                  
-                  {/* Search */}
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                      placeholder="Search players..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                    {searchTerm && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSearchTerm('')}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="pt-0">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : (
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                      {filteredAvailablePlayers.map((player) => (
-                        <div key={player.id} className="space-y-2">
-                          <PlayerCard
-                            player={player}
-                            showActions={false}
-                            className="hover:shadow-md transition-shadow"
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleAddToTeam(player, 1)}
-                              className="flex-1"
-                            >
-                              Add to Team 1
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleAddToTeam(player, 2)}
-                              className="flex-1"
-                            >
-                              Add to Team 2
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                      {filteredAvailablePlayers.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <Users className="w-12 h-12 mx-auto mb-2" />
-                          <p>No players available</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Team Builder */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Build Your Team</h2>
+              <p className="text-muted-foreground">
+                Create your dream basketball team by selecting players from our database.
+              </p>
             </div>
 
-            {/* Teams */}
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Team 1 */}
-              <TeamRoster
-                teamId={1}
-                teamName={team1.name}
-                players={team1.players}
-                onRemovePlayer={(player) => removePlayerFromTeam(player, 1)}
-                onTeamNameChange={(name) => setTeamName(1, name)}
-                validation={team1Validation}
-              />
-
-              {/* Team 2 */}
-              <TeamRoster
-                teamId={2}
-                teamName={team2.name}
-                players={team2.players}
-                onRemovePlayer={(player) => removePlayerFromTeam(player, 2)}
-                onTeamNameChange={(name) => setTeamName(2, name)}
-                validation={team2Validation}
-              />
-            </div>
+            <TeamRoster />
           </div>
-        </div>
 
-        {/* Match Status */}
-        <div className="mt-8">
-          <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Match Status</h3>
-                  <p className="opacity-90">
-                    {canStartMatch
-                      ? 'Both teams are ready! You can start the match.'
-                      : 'Complete both teams to start the match.'}
+          {/* Instructions & Tips */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="w-5 h-5" />
+                  How to Build Your Team
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                      1
+                    </div>
+                    <div>
+                      <p className="font-medium">Browse Players</p>
+                      <p className="text-sm text-muted-foreground">
+                        Go to the Players page to search and filter through NBA players
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                      2
+                    </div>
+                    <div>
+                      <p className="font-medium">Add Players</p>
+                      <p className="text-sm text-muted-foreground">
+                        Click "Add to Team" on player cards to build your roster
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                      3
+                    </div>
+                    <div>
+                      <p className="font-medium">Complete Your Lineup</p>
+                      <p className="text-sm text-muted-foreground">
+                        Add at least one player from each position (PG, SG, SF, PF, C)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                      4
+                    </div>
+                    <div>
+                      <p className="font-medium">Save Your Team</p>
+                      <p className="text-sm text-muted-foreground">
+                        Name your team and save it for future use
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Link href="/players">
+                    <Button className="w-full">
+                      <Search className="w-4 h-4 mr-2" />
+                      Start Building Your Team
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5" />
+                  Team Building Tips
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Position Balance</h4>
+                  <p className="text-sm text-muted-foreground">
+                    A complete starting lineup needs one player from each position. You can add up to 15 players total.
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{team1.players.length}</div>
-                    <div className="text-sm opacity-90">Team 1 Players</div>
-                  </div>
-                  <ArrowRight className="w-6 h-6" />
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{team2.players.length}</div>
-                    <div className="text-sm opacity-90">Team 2 Players</div>
-                  </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-medium">Player Stats</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Consider points per game (PPG), rebounds per game (RPG), and assists per game (APG) when selecting players.
+                  </p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+
+                <div className="space-y-2">
+                  <h4 className="font-medium">Team Chemistry</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Build a balanced team with players who complement each other's strengths and weaknesses.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>
