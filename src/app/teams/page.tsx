@@ -17,9 +17,10 @@ import { Player, PlayerSearchResult } from '@/types';
 import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 import { useTeam } from '@/contexts/TeamContext';
 import { Navbar } from '@/components/layout/Navbar';
+import { SavedTeamsList } from '@/components/teams/SavedTeamsList';
 
 export default function TeamsPage() {
-  const { addPlayer, removePlayer, isPlayerInTeam } = useTeam();
+  const { addPlayer, removePlayer, isPlayerInTeam, loadTeam } = useTeam();
   const [showPlayerSearch, setShowPlayerSearch] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,6 +28,7 @@ export default function TeamsPage() {
   const [selectedPosition, setSelectedPosition] = useState('');
   const [playerGroups, setPlayerGroups] = useState<Record<string, Player[]>>({});
   const [playerYears, setPlayerYears] = useState<Record<string, { availableYears: number[]; bestYear: number; selectedYear: number }>>({});
+  const [showSavedTeams, setShowSavedTeams] = useState(false);
 
   const fetchPlayers = async (searchTerm: string = '', position: string = '') => {
     try {
@@ -97,6 +99,11 @@ export default function TeamsPage() {
     setSelectedPosition('');
     setPlayers([]);
     setPlayerGroups({});
+  };
+
+  const handleLoadTeam = (team: any, targetTeam: 1 | 2) => {
+    loadTeam({ name: team.name, players: team.players }, targetTeam);
+    setShowSavedTeams(false);
   };
 
   return (
@@ -202,6 +209,41 @@ export default function TeamsPage() {
                     </Button>
                   </Link>
                 </div>
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Saved Teams Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5" />
+                  Saved Teams
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSavedTeams(!showSavedTeams)}
+                  className="flex items-center gap-2"
+                >
+                  {showSavedTeams ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      Hide Saved Teams
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      Show Saved Teams
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+            {showSavedTeams && (
+              <CardContent>
+                <SavedTeamsList onLoadTeam={handleLoadTeam} />
               </CardContent>
             )}
           </Card>

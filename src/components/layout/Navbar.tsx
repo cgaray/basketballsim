@@ -8,7 +8,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Search, Trophy, Home } from 'lucide-react';
+import { Users, Search, Trophy, Home, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 interface NavLinkProps {
@@ -74,6 +74,13 @@ export function Navbar() {
               isActive={pathname === '/teams'}
             >
               Build Teams
+            </NavLink>
+            <NavLink
+              href="/matches"
+              icon={<Swords className="w-4 h-4" />}
+              isActive={pathname === '/matches'}
+            >
+              Simulate Match
             </NavLink>
           </nav>
         </div>

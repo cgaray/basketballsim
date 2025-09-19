@@ -5,26 +5,28 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Users, Save, Trash2, Trophy } from 'lucide-react';
+import { AlertCircle, Users, Save, Trash2, Trophy, Search, Plus } from 'lucide-react';
 import { useTeam } from '@/contexts/TeamContext';
 import { Player } from '@/types';
+import { QuickPositionSearch } from '@/components/players/QuickPositionSearch';
 
 interface PositionGroupProps {
   position: string;
   players: Player[];
   onRemove: (playerId: number) => void;
+  onQuickAdd: (position: string) => void;
 }
 
 interface TeamRosterProps {
   teamId: 1 | 2;
 }
 
-function PositionGroup({ position, players, onRemove }: PositionGroupProps) {
+function PositionGroup({ position, players, onRemove, onQuickAdd }: PositionGroupProps) {
   const positionNames = {
     PG: 'Point Guards',
     SG: 'Shooting Guards',
@@ -35,10 +37,21 @@ function PositionGroup({ position, players, onRemove }: PositionGroupProps) {
 
   return (
     <div className="space-y-2">
-      <h4 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
-        {positionNames[position as keyof typeof positionNames]} ({players.length})
-        {players.length === 0 && <AlertCircle className="w-4 h-4 text-orange-500" />}
-      </h4>
+      <div className="flex items-center justify-between">
+        <h4 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
+          {positionNames[position as keyof typeof positionNames]} ({players.length})
+          {players.length === 0 && <AlertCircle className="w-4 h-4 text-orange-500" />}
+        </h4>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onQuickAdd(position)}
+          className="h-7 px-2 text-xs"
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          Add {position}
+        </Button>
+      </div>
       {players.length === 0 ? (
         <div className="p-3 border-2 border-dashed border-muted rounded-lg text-center text-muted-foreground text-sm">
           No {position} players
@@ -77,6 +90,7 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
     team1,
     team2,
     setTeamName,
+    addPlayer,
     removePlayer,
     clearRoster,
     saveTeam,
@@ -85,6 +99,9 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
     isLoading,
     error,
   } = useTeam();
+
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [quickSearchPosition, setQuickSearchPosition] = useState('');
 
   const currentTeam = teamId === 1 ? team1 : team2;
   const roster = currentTeam.roster;
@@ -101,14 +118,35 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
     C: roster.filter(p => p.position === 'C'),
   };
 
+  const handleQuickAdd = (position: string) => {
+    setQuickSearchPosition(position);
+    setShowQuickSearch(true);
+  };
+
+  const handleCloseQuickSearch = () => {
+    setShowQuickSearch(false);
+    setQuickSearchPosition('');
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="w-5 h-5" />
-          Current Roster ({roster.length}/15)
-          {isComplete && <Trophy className="w-5 h-5 text-yellow-500" />}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Current Roster ({roster.length}/15)
+            {isComplete && <Trophy className="w-5 h-5 text-yellow-500" />}
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickAdd('')}
+            className="h-8"
+          >
+            <Search className="w-4 h-4 mr-2" />
+            Quick Add
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Team Name Input */}
@@ -160,6 +198,19 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
           </div>
         )}
 
+        {/* Quick Search Component */}
+        {showQuickSearch && (
+          <div className="mb-4">
+            <QuickPositionSearch
+              teamId={teamId}
+              position={quickSearchPosition}
+              currentRoster={roster}
+              onAddPlayer={addPlayer}
+              onClose={handleCloseQuickSearch}
+            />
+          </div>
+        )}
+
         {/* Players by Position */}
         {roster.length > 0 ? (
           <div className="space-y-4">
@@ -169,6 +220,7 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
                 position={position}
                 players={groupedPlayers[position]}
                 onRemove={(playerId) => removePlayer(playerId, teamId)}
+                onQuickAdd={handleQuickAdd}
               />
             ))}
           </div>

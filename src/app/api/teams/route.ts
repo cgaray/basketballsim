@@ -15,7 +15,7 @@ interface CreateTeamRequest {
 interface Team {
   id: number;
   name: string;
-  players: number[];
+  players: any[]; // Will be full player objects after fetching
   createdAt: Date;
 }
 
@@ -29,14 +29,46 @@ export async function GET(request: NextRequest): Promise<NextResponse<APIRespons
       orderBy: { createdAt: 'desc' },
     });
 
-    const teamsWithParsedPlayers = teams.map(team => ({
-      ...team,
-      players: JSON.parse(team.players),
-    }));
+    // Fetch full player details for each team
+    const teamsWithFullPlayers = await Promise.all(
+      teams.map(async (team) => {
+        const playerIds = JSON.parse(team.players) as number[];
+
+        // Get full player details
+        const players = await prisma.player.findMany({
+          where: { id: { in: playerIds } },
+          select: {
+            id: true,
+            name: true,
+            position: true,
+            team: true,
+            season: true,
+            pointsPerGame: true,
+            reboundsPerGame: true,
+            assistsPerGame: true,
+            stealsPerGame: true,
+            blocksPerGame: true,
+            fieldGoalPercentage: true,
+            threePointPercentage: true,
+            freeThrowPercentage: true,
+          },
+        });
+
+        // Maintain the original order of playerIds
+        const orderedPlayers = playerIds.map(id =>
+          players.find(p => p.id === id)
+        ).filter(Boolean);
+
+        return {
+          ...team,
+          players: orderedPlayers,
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,
-      data: teamsWithParsedPlayers,
+      data: teamsWithFullPlayers,
     });
 
   } catch (error) {

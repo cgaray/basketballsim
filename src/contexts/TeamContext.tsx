@@ -33,7 +33,7 @@ interface TeamContextType extends TeamState {
   clearRoster: (teamId: 1 | 2) => void;
   clearAll: () => void;
   saveTeam: (teamId: 1 | 2) => Promise<void>;
-  loadTeam: (teamId: number, targetTeam: 1 | 2) => Promise<void>;
+  loadTeam: (teamData: { name: string; players: Player[] }, targetTeam: 1 | 2) => Promise<void>;
   getPositionCount: (teamId: 1 | 2) => Record<string, number>;
   isValidRoster: (teamId: 1 | 2) => boolean;
   isPlayerInTeam: (playerId: number) => 1 | 2 | null;
@@ -226,22 +226,15 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loadTeam = async (teamId: number, targetTeam: 1 | 2) => {
+  const loadTeam = async (teamData: { name: string; players: Player[] }, targetTeam: 1 | 2) => {
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      const response = await fetch(`/api/teams/${teamId}`);
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to load team');
-      }
-
       dispatch({
         type: 'LOAD_TEAM',
         payload: {
-          name: result.data.name,
-          players: result.data.players,
+          name: teamData.name,
+          players: teamData.players,
         },
         teamId: targetTeam
       });
