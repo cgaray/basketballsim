@@ -7,6 +7,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { PlayerAvatar } from '@/components/ui/player-avatar';
 import { Player } from '@/types';
 import {
   formatDecimal,
@@ -77,29 +78,35 @@ export function PlayerCard({
       )}
     >
       <CardContent className="p-4">
-        {/* Header with Name and Position */}
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-lg text-foreground truncate">
-            {formatPlayerName(player.name)}
-          </h3>
-          <div className="flex items-center gap-2">
+        {/* Header with Avatar, Name and Position */}
+        <div className="flex items-start gap-3 mb-3">
+          <PlayerAvatar
+            name={player.name}
+            imageUrl={player.imageUrl}
+            size="md"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-bold text-lg text-foreground truncate">
+                {formatPlayerName(player.name)}
+              </h3>
+              <Badge variant={getPositionBadgeVariant(position)}>
+                {position}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {formatTeamName(player.team)}
+            </p>
             {selectedTeam && (
               <Badge variant="secondary" className={cn(
+                'mt-2',
                 selectedTeam === 1 ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
               )}>
                 Team {selectedTeam}
               </Badge>
             )}
-            <Badge variant={getPositionBadgeVariant(position)}>
-              {position}
-            </Badge>
           </div>
         </div>
-
-        {/* Team */}
-        <p className="text-sm text-muted-foreground mb-3">
-          {formatTeamName(player.team)}
-        </p>
 
         {/* Key Stats */}
         <div className="grid grid-cols-3 gap-3 mb-4">
