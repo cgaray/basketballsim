@@ -247,7 +247,7 @@ export default function PlayersPage() {
                     return (
                       <Button
                         key={pageNum}
-                        variant={pageNum === pagination.page ? 'basketball' : 'outline'}
+                        variant={pageNum === pagination.page ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => handlePageChange(pageNum)}
                         className="w-8 h-8 p-0"

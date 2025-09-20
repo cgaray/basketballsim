@@ -54,6 +54,21 @@ export function TeamRoster({
     return teamId === 1 ? 'border-primary' : 'border-emerald-600';
   };
 
+  const getTeamColor = () => {
+    return teamId === 1 ? 'border-primary' : 'border-emerald-600';
+  };
+
+  const getPositionColor = (position: Position): string => {
+    const colors = {
+      PG: 'bg-blue-100 text-blue-800',
+      SG: 'bg-green-100 text-green-800',
+      SF: 'bg-purple-100 text-purple-800',
+      PF: 'bg-orange-100 text-orange-800',
+      C: 'bg-red-100 text-red-800',
+    };
+    return colors[position] || 'bg-gray-100 text-gray-800';
+  };
+
   // Render a placeholder during SSR to prevent hydration mismatch
   if (!isMounted) {
     return (

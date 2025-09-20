@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { PlayerCard } from '../PlayerCard';
 import { Player } from '@/types';
 
@@ -90,12 +91,12 @@ describe('PlayerCard', () => {
     expect(card).toHaveClass('ring-2', 'ring-primary');
   });
 
-  it('calls onSelect when clicked and not selected', () => {
-    const onSelect = jest.fn();
-    render(<PlayerCard {...defaultProps} onSelect={onSelect} />);
+  it('calls onDeselect when clicked and selected', () => {
+    const onDeselect = jest.fn();
+    render(<PlayerCard {...defaultProps} isSelected={true} onDeselect={onDeselect} />);
 
     fireEvent.click(screen.getByRole('button'));
-    expect(onSelect).toHaveBeenCalledWith(mockPlayer);
+    expect(onDeselect).toHaveBeenCalledWith(mockPlayer);
   });
 
   it('calls onDeselect when clicked and selected', () => {

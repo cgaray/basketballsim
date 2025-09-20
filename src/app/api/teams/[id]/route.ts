@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database/prisma';
-import type { APIResponse } from '@/types';
+import type { APIResponse, Player } from '@/types';
 
 interface UpdateTeamRequest {
   name?: string;
@@ -15,7 +15,7 @@ interface UpdateTeamRequest {
 interface TeamWithPlayers {
   id: number;
   name: string;
-  players: any[];
+  players: Player[];
   createdAt: Date;
 }
 
@@ -111,7 +111,7 @@ export async function PUT(
       );
     }
 
-    const updateData: any = {};
+    const updateData: { name?: string; players?: number[] } = {};
 
     if (body.name) {
       updateData.name = body.name;

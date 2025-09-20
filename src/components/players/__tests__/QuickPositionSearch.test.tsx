@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
 import { QuickPositionSearch } from '../QuickPositionSearch';
 import { Player } from '@/types';
 
@@ -21,13 +22,12 @@ describe('QuickPositionSearch', () => {
     assistsPerGame: 7.3,
     stealsPerGame: 1.2,
     blocksPerGame: 0.6,
-    fieldGoalPercentage: 50.6,
-    threePointPercentage: 37.4,
-    freeThrowPercentage: 73.2,
-    turnoversPerGame: 3.5,
-    season: '2023-24',
+    fieldGoalPercentage: 0.506,
+    threePointPercentage: 0.374,
+    freeThrowPercentage: 0.732,
+    season: 2023,
     gamesPlayed: 71,
-    playerEfficiencyRating: 26.1,
+    createdAt: new Date('2023-01-01'),
   };
 
   const defaultProps = {

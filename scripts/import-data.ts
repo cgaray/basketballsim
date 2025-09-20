@@ -7,8 +7,25 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+interface PlayerStats {
+  name: string;
+  position: string;
+  team: string;
+  season?: number;
+  pointsPerGame: number;
+  reboundsPerGame: number;
+  assistsPerGame: number;
+  stealsPerGame: number;
+  blocksPerGame: number;
+  fieldGoalPercentage: number;
+  threePointPercentage: number;
+  freeThrowPercentage: number;
+  gamesPlayed: number;
+  imageUrl?: string | null;
+}
+
 // Helper function to generate player stats for different years
-function generatePlayerStats(baseStats: any, year: number, variation: number = 0.1) {
+function generatePlayerStats(baseStats: PlayerStats, year: number, variation: number = 0.1): PlayerStats {
   return {
     ...baseStats,
     season: year,
@@ -388,7 +405,7 @@ const basePlayers: BasePlayer[] = [
 ];
 
 // Generate multi-year data for each player
-const samplePlayers: any[] = [];
+const samplePlayers: PlayerStats[] = [];
 
 basePlayers.forEach((player: BasePlayer) => {
   // Generate data for 5 years around their peak

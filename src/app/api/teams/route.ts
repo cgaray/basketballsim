@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database/prisma';
-import type { APIResponse } from '@/types';
+import type { APIResponse, Player } from '@/types';
 
 interface CreateTeamRequest {
   name: string;
@@ -15,7 +15,7 @@ interface CreateTeamRequest {
 interface Team {
   id: number;
   name: string;
-  players: any[]; // Will be full player objects after fetching
+  players: Player[]; // Will be full player objects after fetching
   createdAt: Date;
 }
 
