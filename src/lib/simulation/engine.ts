@@ -7,6 +7,7 @@ import {
   PlayerGameStats,
   TeamGameStats
 } from './types';
+import { HighlightDetector, CommentaryGenerator } from '../llm/highlights';
 
 const QUARTER_LENGTH_MINUTES = 12;
 const POSSESSIONS_PER_QUARTER = 25;
@@ -54,7 +55,7 @@ export class SimulationEngine {
     };
   }
 
-  public simulateMatch(): MatchResult {
+  public async simulateMatch(): Promise<MatchResult> {
     const quarters: QuarterStats[] = [];
     let team1TotalScore = 0;
     let team2TotalScore = 0;
@@ -76,7 +77,7 @@ export class SimulationEngine {
 
     const mvp = this.calculateMVP();
 
-    return {
+    const baseResult: MatchResult = {
       team1: this.team1,
       team2: this.team2,
       team1Score: team1TotalScore,
@@ -85,6 +86,24 @@ export class SimulationEngine {
       winner: team1TotalScore > team2TotalScore ? 'team1' : 'team2',
       mvp
     };
+
+    // Generate highlights using LLM
+    try {
+      const highlightDetector = new HighlightDetector();
+      const keyMoments = highlightDetector.detectKeyMoments(baseResult);
+
+      const commentaryGenerator = new CommentaryGenerator();
+      const highlights = await commentaryGenerator.generateHighlights(baseResult, keyMoments);
+
+      return {
+        ...baseResult,
+        highlights
+      };
+    } catch (error) {
+      console.error('Error generating highlights:', error);
+      // Return result without highlights if generation fails
+      return baseResult;
+    }
   }
 
   private simulateQuarter(): QuarterStats {

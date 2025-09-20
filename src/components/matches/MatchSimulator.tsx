@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { SimulationEngine } from '@/lib/simulation/engine';
 import { MatchResult, SimulationPlayer, SimulationTeam } from '@/lib/simulation/types';
+import { Sparkles, TrendingUp, Trophy, Zap } from 'lucide-react';
 
 interface Team {
   id: number;
@@ -26,6 +27,7 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
   const [error, setError] = useState<string | null>(null);
   const [currentQuarter, setCurrentQuarter] = useState(0);
   const [showPlayByPlay, setShowPlayByPlay] = useState(false);
+  const [showHighlights, setShowHighlights] = useState(true);
 
   const simulateMatch = async () => {
     setLoading(true);
@@ -65,9 +67,11 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
   };
 
   const simulateWithAnimation = async (engine: SimulationEngine): Promise<MatchResult> => {
-    return new Promise((resolve) => {
-      const result = engine.simulateMatch();
+    return new Promise(async (resolve) => {
+      // First simulate the match to get the result
+      const result = await engine.simulateMatch();
 
+      // Then animate the quarters display
       let quarterIndex = 0;
       const animateQuarters = () => {
         if (quarterIndex < result.quarters.length) {
@@ -104,17 +108,22 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
 
   const saveMatchResult = async (result: MatchResult) => {
     try {
+      const matchData = {
+        team1Id: result.team1.id,
+        team2Id: result.team2.id,
+        team1Score: result.team1Score,
+        team2Score: result.team2Score,
+        winnerId: result.winner === 'team1' ? result.team1.id : result.team2.id,
+        playByPlay: JSON.stringify({
+          quarters: result.quarters,
+          highlights: result.highlights
+        })
+      };
+
       await fetch('/api/matches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          team1Id: result.team1.id,
-          team2Id: result.team2.id,
-          team1Score: result.team1Score,
-          team2Score: result.team2Score,
-          winnerId: result.winner === 'team1' ? result.team1.id : result.team2.id,
-          playByPlay: JSON.stringify(result.quarters)
-        })
+        body: JSON.stringify(matchData)
       });
     } catch (err) {
       console.error('Failed to save match result:', err);
@@ -328,6 +337,95 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
           </CardContent>
         )}
       </Card>
+
+      {matchResult.highlights && (
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-yellow-500" />
+                <CardTitle>Game Highlights</CardTitle>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowHighlights(!showHighlights)}
+              >
+                {showHighlights ? 'Hide' : 'Show'} Highlights
+              </Button>
+            </div>
+          </CardHeader>
+          {showHighlights && (
+            <CardContent>
+              {/* Game Summary */}
+              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                <h4 className="font-bold text-lg mb-2">Game Summary</h4>
+                <p className="text-gray-700 mb-2">{matchResult.highlights.narrative}</p>
+                <p className="font-semibold text-purple-700">{matchResult.highlights.summary}</p>
+              </div>
+
+              {/* Key Moments */}
+              <div className="space-y-4">
+                <h4 className="font-bold text-lg flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-orange-500" />
+                  Key Moments
+                </h4>
+                <div className="space-y-3">
+                  {matchResult.highlights.moments.map((moment, index) => {
+                    const iconMap = {
+                      'clutch_shot': <Trophy className="w-4 h-4 text-yellow-500" />,
+                      'momentum_swing': <TrendingUp className="w-4 h-4 text-green-500" />,
+                      'run': <Zap className="w-4 h-4 text-orange-500" />,
+                      'comeback': <TrendingUp className="w-4 h-4 text-blue-500" />,
+                      'highlight_play': <Sparkles className="w-4 h-4 text-purple-500" />,
+                      'milestone': <Trophy className="w-4 h-4 text-yellow-600" />
+                    };
+
+                    const bgColorMap = {
+                      'high': 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300',
+                      'medium': 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-300',
+                      'low': 'bg-gray-50 border-gray-200'
+                    };
+
+                    return (
+                      <div
+                        key={index}
+                        className={`p-3 rounded-lg border ${bgColorMap[moment.importance]}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="mt-1">
+                            {iconMap[moment.type] || <Sparkles className="w-4 h-4 text-gray-500" />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" className="text-xs">
+                                Q{moment.quarter} - {moment.time}
+                              </Badge>
+                              {moment.importance === 'high' && (
+                                <Badge variant="default" className="text-xs bg-orange-500">
+                                  Critical
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm font-medium text-gray-800">
+                              {moment.description}
+                            </p>
+                            {moment.involvedPlayers.length > 0 && (
+                              <p className="text-xs text-gray-600 mt-1">
+                                Featuring: {moment.involvedPlayers.join(', ')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

@@ -49,6 +49,19 @@ export interface MatchResult {
     rebounds: number;
     assists: number;
   };
+  highlights?: {
+    moments: Array<{
+      quarter: number;
+      time: string;
+      description: string;
+      importance: 'high' | 'medium' | 'low';
+      type: string;
+      teamFavor?: 'team1' | 'team2';
+      involvedPlayers: string[];
+    }>;
+    narrative: string;
+    summary: string;
+  };
 }
 
 export interface PlayerGameStats {
