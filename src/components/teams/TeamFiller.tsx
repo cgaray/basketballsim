@@ -143,14 +143,14 @@ export function TeamFiller({ availablePlayers, teamId, onSuccess }: TeamFillerPr
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="min-w-[320px]">
               {Object.entries(FILL_STRATEGIES).map(([key, strategy]) => (
                 <SelectItem key={key} value={key}>
-                  <div className="flex items-center gap-2">
-                    {strategy.icon}
-                    <div>
-                      <div className="font-medium">{strategy.name}</div>
-                      <div className="text-xs text-muted-foreground">{strategy.description}</div>
+                  <div className="flex items-start gap-2 py-1">
+                    <div className="mt-0.5">{strategy.icon}</div>
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                      <div className="font-medium leading-tight">{strategy.name}</div>
+                      <div className="text-xs text-muted-foreground leading-tight break-words">{strategy.description}</div>
                     </div>
                   </div>
                 </SelectItem>
