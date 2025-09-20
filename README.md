@@ -1,3 +1,8 @@
+# Basketball Team Builder & Simulator
+
+[![Tests](https://github.com/cgaray/basketballsim/actions/workflows/test.yml/badge.svg)](https://github.com/cgaray/basketballsim/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/cgaray/basketballsim/branch/main/graph/badge.svg)](https://codecov.io/gh/cgaray/basketballsim)
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
