@@ -182,12 +182,12 @@ export function getPlayerTrend(players: Player[]): {
 
   // Sort by year (most recent first)
   const sortedPlayers = [...players].sort((a, b) => (b.season || 0) - (a.season || 0));
-  
+
   const recentEfficiency = calculateYearEfficiency(sortedPlayers[0]);
   const careerAverage = sortedPlayers.reduce((sum, player) => sum + calculateYearEfficiency(player), 0) / sortedPlayers.length;
-  
+
   const change = recentEfficiency - careerAverage;
-  
+
   let trend: 'improving' | 'declining' | 'stable' = 'stable';
   if (change > 2) {
     trend = 'improving';
@@ -200,5 +200,149 @@ export function getPlayerTrend(players: Player[]): {
     recentEfficiency,
     careerAverage,
     change,
+  };
+}
+
+/**
+ * Find the best available players for each position
+ */
+export function findBestPlayersByPosition(
+  availablePlayers: Player[],
+  takenPlayerIds: Set<number> = new Set(),
+  requirements: Record<string, number> = { PG: 1, SG: 1, SF: 1, PF: 1, C: 1 }
+): Record<string, Player[]> {
+  const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
+  const result: Record<string, Player[]> = {};
+
+  // Initialize result object with empty arrays for each position
+  positions.forEach(pos => {
+    result[pos] = [];
+  });
+
+  // Filter out taken players
+  const available = availablePlayers.filter(player => !takenPlayerIds.has(player.id));
+
+  // Group players by position
+  const playersByPosition: Record<string, Player[]> = {};
+  positions.forEach(pos => {
+    playersByPosition[pos] = available.filter(player => player.position === pos);
+  });
+
+  // For each position, find the best players based on efficiency
+  positions.forEach(position => {
+    const positionPlayers = playersByPosition[position];
+
+    // Sort by efficiency (highest first)
+    const sortedPlayers = positionPlayers
+      .map(player => ({
+        player,
+        efficiency: calculateYearEfficiency(player),
+        gamesPlayed: player.gamesPlayed || 0,
+      }))
+      .sort((a, b) => {
+        // Primary sort: efficiency (higher is better)
+        if (b.efficiency !== a.efficiency) {
+          return b.efficiency - a.efficiency;
+        }
+        // Secondary sort: games played (more games is better, indicates healthy season)
+        return b.gamesPlayed - a.gamesPlayed;
+      });
+
+    // Take the required number of players for this position
+    const requiredCount = requirements[position] || 1;
+    result[position] = sortedPlayers
+      .slice(0, requiredCount)
+      .map(item => item.player);
+  });
+
+  return result;
+}
+
+/**
+ * Calculate a comprehensive player rating for position-based selection
+ */
+export function calculatePlayerRating(player: Player): number {
+  const efficiency = calculateYearEfficiency(player);
+
+  // Position-specific adjustments
+  let positionMultiplier = 1.0;
+  switch (player.position) {
+    case 'PG':
+      // Point guards value assists and efficiency
+      positionMultiplier = 1.1;
+      break;
+    case 'SG':
+      // Shooting guards value scoring and 3-point shooting
+      positionMultiplier = player.threePointPercentage > 0.35 ? 1.05 : 0.95;
+      break;
+    case 'SF':
+      // Small forwards are well-rounded
+      positionMultiplier = 1.0;
+      break;
+    case 'PF':
+      // Power forwards value rebounding and defense
+      positionMultiplier = player.reboundsPerGame > 8 ? 1.05 : 0.95;
+      break;
+    case 'C':
+      // Centers value size and interior defense
+      positionMultiplier = player.blocksPerGame > 1.5 ? 1.1 : 0.9;
+      break;
+  }
+
+  return efficiency * positionMultiplier;
+}
+
+/**
+ * Get team composition recommendations based on available players
+ */
+export function getTeamCompositionRecommendation(
+  availablePlayers: Player[],
+  takenPlayerIds: Set<number> = new Set()
+): {
+  recommended: Record<string, Player[]>;
+  alternatives: Record<string, Player[]>;
+  depthChart: Record<string, Player[]>;
+} {
+  const available = availablePlayers.filter(player => !takenPlayerIds.has(player.id));
+
+  // Starting 5 (best players at each position)
+  const startingFive = findBestPlayersByPosition(available, takenPlayerIds, {
+    PG: 1, SG: 1, SF: 1, PF: 1, C: 1
+  });
+
+  // Bench depth (2-3 players per position)
+  const benchDepth = findBestPlayersByPosition(available, takenPlayerIds, {
+    PG: 2, SG: 2, SF: 2, PF: 2, C: 2
+  });
+
+  // Alternative options (next best 2 players per position)
+  const alternatives = findBestPlayersByPosition(available, takenPlayerIds, {
+    PG: 2, SG: 2, SF: 2, PF: 2, C: 2
+  });
+
+  // Remove players already selected in starting five from alternatives
+  const startingPlayerIds = new Set(
+    Object.values(startingFive).flat().map(p => p.id)
+  );
+
+  Object.keys(alternatives).forEach(position => {
+    alternatives[position] = alternatives[position].filter(
+      player => !startingPlayerIds.has(player.id)
+    );
+  });
+
+  // Create depth chart (combine starting + bench)
+  const depthChart: Record<string, Player[]> = {};
+  Object.keys(startingFive).forEach(position => {
+    depthChart[position] = [
+      ...startingFive[position],
+      ...benchDepth[position].slice(0, 2) // Limit bench to 2 per position
+    ];
+  });
+
+  return {
+    recommended: startingFive,
+    alternatives,
+    depthChart,
   };
 }

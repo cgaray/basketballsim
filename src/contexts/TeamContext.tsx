@@ -7,6 +7,7 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import type { Player } from '@/types';
+import { findBestPlayersByPosition } from '@/lib/utils/player-stats';
 
 interface SingleTeamState {
   roster: Player[];
@@ -21,8 +22,8 @@ interface TeamState {
 }
 
 interface TeamAction {
-  type: 'ADD_PLAYER' | 'REMOVE_PLAYER' | 'SET_TEAM_NAME' | 'CLEAR_ROSTER' | 'SET_LOADING' | 'SET_ERROR' | 'LOAD_TEAM' | 'CLEAR_ALL';
-  payload?: Player | string | boolean | number | { players: Player[]; name: string };
+  type: 'ADD_PLAYER' | 'REMOVE_PLAYER' | 'SET_TEAM_NAME' | 'CLEAR_ROSTER' | 'SET_LOADING' | 'SET_ERROR' | 'LOAD_TEAM' | 'CLEAR_ALL' | 'ADD_MULTIPLE_PLAYERS';
+  payload?: Player | string | boolean | number | { players: Player[]; name: string } | Player[];
   teamId?: 1 | 2;
 }
 
@@ -37,6 +38,8 @@ interface TeamContextType extends TeamState {
   getPositionCount: (teamId: 1 | 2) => Record<string, number>;
   isValidRoster: (teamId: 1 | 2) => boolean;
   isPlayerInTeam: (playerId: number) => 1 | 2 | null;
+  addMultiplePlayers: (players: Player[], teamId: 1 | 2) => void;
+  fillTeamWithBestPlayers: (availablePlayers: Player[], teamId: 1 | 2, requirements?: Record<string, number>) => void;
 }
 
 const initialState: TeamState = {
@@ -149,6 +152,34 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         team1: { roster: [], teamName: '' },
         team2: { roster: [], teamName: '' },
+        error: null,
+      };
+
+    case 'ADD_MULTIPLE_PLAYERS':
+      // Get all players currently in both teams
+      const allCurrentPlayers = [...state.team1.roster, ...state.team2.roster];
+      const currentPlayerIds = new Set(allCurrentPlayers.map(p => p.id));
+
+      // Filter out players already in teams
+      const newPlayers = (action.payload as Player[]).filter(p => !currentPlayerIds.has(p.id));
+
+      // Check roster limit
+      const availableSlots = 15 - currentTeam.roster.length;
+      if (newPlayers.length > availableSlots) {
+        return {
+          ...state,
+          error: `Cannot add ${newPlayers.length} players. Only ${availableSlots} slots available in Team ${teamId}`,
+        };
+      }
+
+      const updatedTeamWithMultiple = {
+        ...currentTeam,
+        roster: [...currentTeam.roster, ...newPlayers],
+      };
+
+      return {
+        ...state,
+        [teamId === 1 ? 'team1' : 'team2']: updatedTeamWithMultiple,
         error: null,
       };
 
@@ -280,6 +311,34 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     return null;
   };
 
+  const addMultiplePlayers = (players: Player[], teamId: 1 | 2) => {
+    dispatch({ type: 'ADD_MULTIPLE_PLAYERS', payload: players, teamId });
+  };
+
+  const fillTeamWithBestPlayers = (availablePlayers: Player[], teamId: 1 | 2, requirements: Record<string, number> = { PG: 1, SG: 1, SF: 1, PF: 1, C: 1 }) => {
+    try {
+      // Get all players currently in both teams
+      const allCurrentPlayers = [...state.team1.roster, ...state.team2.roster];
+      const takenPlayerIds = new Set(allCurrentPlayers.map(p => p.id));
+
+      const bestPlayersByPosition = findBestPlayersByPosition(
+        availablePlayers,
+        takenPlayerIds,
+        requirements
+      );
+
+      // Flatten all selected players
+      const selectedPlayers = Object.values(bestPlayersByPosition).flat();
+
+      if (selectedPlayers.length > 0) {
+        addMultiplePlayers(selectedPlayers, teamId);
+      }
+    } catch (error) {
+      console.error('Error filling team with best players:', error);
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to fill team with best players' });
+    }
+  };
+
   const contextValue: TeamContextType = {
     ...state,
     addPlayer,
@@ -292,6 +351,8 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     getPositionCount,
     isValidRoster,
     isPlayerInTeam,
+    addMultiplePlayers,
+    fillTeamWithBestPlayers,
   };
 
   return (

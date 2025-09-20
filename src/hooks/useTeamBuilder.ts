@@ -28,6 +28,7 @@ export interface TeamBuilderActions {
   clearTeam: (teamId: 1 | 2) => void;
   getTeamValidation: (teamId: 1 | 2) => TeamValidationResult;
   canAddPlayerToTeam: (player: Player, teamId: 1 | 2) => boolean;
+  fillTeamWithBestPlayers: (teamId: 1 | 2, requirements?: Record<string, number>) => void;
 }
 
 export interface TeamValidationResult {
@@ -227,6 +228,12 @@ export function useTeamBuilder(initialAvailablePlayers: Player[] = []): TeamBuil
     return true;
   }, [state]);
 
+  const fillTeamWithBestPlayers = useCallback((teamId: 1 | 2, requirements: Record<string, number> = { PG: 1, SG: 1, SF: 1, PF: 1, C: 1 }) => {
+    // This method would need to be implemented to integrate with the TeamContext
+    // For now, we'll leave it as a placeholder that can be connected later
+    console.log(`Fill team ${teamId} with best players using requirements:`, requirements);
+  }, []);
+
   return {
     ...state,
     addPlayerToTeam,
@@ -238,5 +245,6 @@ export function useTeamBuilder(initialAvailablePlayers: Player[] = []): TeamBuil
     clearTeam,
     getTeamValidation,
     canAddPlayerToTeam,
+    fillTeamWithBestPlayers,
   };
 }

@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { TeamRoster } from '@/components/team/TeamRoster';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Search, Trophy, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { Search, Trophy, ChevronDown, ChevronUp, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { PlayerSearch } from '@/components/players/PlayerSearch';
 import { PlayerCard } from '@/components/cards/PlayerCard';
@@ -18,6 +18,7 @@ import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 import { useTeam } from '@/contexts/TeamContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { SavedTeamsList } from '@/components/teams/SavedTeamsList';
+import { TeamFiller } from '@/components/teams/TeamFiller';
 
 export default function TeamsPage() {
   const { addPlayer, removePlayer, isPlayerInTeam, loadTeam } = useTeam();
@@ -29,6 +30,7 @@ export default function TeamsPage() {
   const [playerGroups, setPlayerGroups] = useState<Record<string, Player[]>>({});
   const [playerYears, setPlayerYears] = useState<Record<string, { availableYears: number[]; bestYear: number; selectedYear: number }>>({});
   const [showSavedTeams, setShowSavedTeams] = useState(false);
+  const [showTeamFiller, setShowTeamFiller] = useState(false);
 
   const fetchPlayers = async (searchTerm: string = '', position: string = '') => {
     try {
@@ -244,6 +246,52 @@ export default function TeamsPage() {
             {showSavedTeams && (
               <CardContent>
                 <SavedTeamsList onLoadTeam={handleLoadTeam} />
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Team Filler Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Fill with Best Players
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTeamFiller(!showTeamFiller)}
+                  className="flex items-center gap-2"
+                >
+                  {showTeamFiller ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      Hide Filler
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      Auto-Fill Teams
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+            {showTeamFiller && (
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <TeamFiller
+                    availablePlayers={players}
+                    teamId={1}
+                    onSuccess={() => setShowTeamFiller(false)}
+                  />
+                  <TeamFiller
+                    availablePlayers={players}
+                    teamId={2}
+                    onSuccess={() => setShowTeamFiller(false)}
+                  />
+                </div>
               </CardContent>
             )}
           </Card>
