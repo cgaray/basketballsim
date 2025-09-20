@@ -1,10 +1,9 @@
 /**
  * TeamRoster Component
- * Displays a team's roster with drag and drop functionality
+ * Displays a team's roster
  */
 
 import React, { useState, useEffect } from 'react';
-import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -218,64 +217,36 @@ export function TeamRoster({
       </CardHeader>
 
       <CardContent className="pt-0">
-        <Droppable droppableId={`team-${teamId}`} isDropDisabled={isDropDisabled}>
-          {(provided, snapshot) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className={`min-h-[400px] transition-colors ${
-                snapshot.isDraggingOver
-                  ? 'bg-primary/5 border-2 border-dashed border-primary'
-                  : 'bg-muted'
-              } rounded-lg p-4`}
-            >
-              {players.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                  <Users className="w-12 h-12 mb-2" />
-                  <p className="text-center">
-                    Drop players here to build your team
-                  </p>
+        <div className="min-h-[400px] bg-muted rounded-lg p-4">
+          {players.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+              <Users className="w-12 h-12 mb-2" />
+              <p className="text-center">
+                Drop players here to build your team
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {players.map((player, index) => (
+                <div key={player.id} className="relative group">
+                  <PlayerCard
+                    player={player}
+                    showActions={false}
+                    className="cursor-move"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => onRemovePlayer(player)}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-3">
-                  {players.map((player, index) => (
-                    <Draggable
-                      key={player.id}
-                      draggableId={`player-${player.id}`}
-                      index={index}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`${snapshot.isDragging ? 'opacity-50' : ''}`}
-                        >
-                          <div className="relative group">
-                            <PlayerCard
-                              player={player}
-                              showActions={false}
-                              className="cursor-move"
-                            />
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => onRemovePlayer(player)}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                </div>
-              )}
-              {provided.placeholder}
+              ))}
             </div>
           )}
-        </Droppable>
+        </div>
       </CardContent>
     </Card>
   );
