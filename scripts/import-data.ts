@@ -3,12 +3,12 @@
  * Populates the database with sample NBA player data across multiple seasons
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 // Helper function to generate player stats for different years
-function generatePlayerStats(baseStats: any, year: number, variation: number = 0.1) {
+function generatePlayerStats(baseStats: BasePlayer['baseStats'], year: number, variation: number = 0.1) {
   return {
     ...baseStats,
     season: year,
@@ -388,7 +388,7 @@ const basePlayers: BasePlayer[] = [
 ];
 
 // Generate multi-year data for each player
-const samplePlayers: any[] = [];
+const samplePlayers: Prisma.PlayerCreateManyInput[] = [];
 
 basePlayers.forEach((player: BasePlayer) => {
   // Generate data for 5 years around their peak

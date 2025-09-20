@@ -20,6 +20,13 @@ import { Navbar } from '@/components/layout/Navbar';
 import { SavedTeamsList } from '@/components/teams/SavedTeamsList';
 import { TeamFiller } from '@/components/teams/TeamFiller';
 
+interface SavedTeam {
+  id: number;
+  name: string;
+  players: Player[];
+  createdAt: string;
+}
+
 export default function TeamsPage() {
   const { addPlayer, removePlayer, isPlayerInTeam, loadTeam } = useTeam();
   const [showPlayerSearch, setShowPlayerSearch] = useState(false);
@@ -103,7 +110,7 @@ export default function TeamsPage() {
     setPlayerGroups({});
   };
 
-  const handleLoadTeam = (team: any, targetTeam: 1 | 2) => {
+  const handleLoadTeam = (team: SavedTeam, targetTeam: 1 | 2) => {
     loadTeam({ name: team.name, players: team.players }, targetTeam);
     setShowSavedTeams(false);
   };
