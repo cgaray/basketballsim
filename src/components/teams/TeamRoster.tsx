@@ -4,14 +4,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Input } from '@/components/ui/input';
 import { PlayerCard } from '@/components/cards/PlayerCard';
 import { Player, Position } from '@/types';
-import { useTeamBuilder, TeamValidationResult } from '@/hooks/useTeamBuilder';
+import { TeamValidationResult } from '@/hooks/useTeamBuilder';
 import { AlertTriangle, CheckCircle, X, Users } from 'lucide-react';
 
 interface TeamRosterProps {
@@ -31,24 +28,12 @@ export function TeamRoster({
   onRemovePlayer,
   onTeamNameChange,
   validation,
-  isDropDisabled = false,
 }: TeamRosterProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  const getPositionBadgeVariant = (position: Position): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    const variants = {
-      PG: 'default' as const,
-      SG: 'secondary' as const,
-      SF: 'outline' as const,
-      PF: 'destructive' as const,
-      C: 'default' as const,
-    };
-    return variants[position] || 'outline';
-  };
 
   const getTeamBorder = () => {
     return teamId === 1 ? 'border-primary' : 'border-emerald-600';
@@ -139,17 +124,17 @@ export function TeamRoster({
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                 <Users className="w-12 h-12 mb-2" />
                 <p className="text-center">
-                  Drop players here to build your team
+                  Add players here to build your team
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3">
-                {players.map((player, index) => (
+                {players.map((player) => (
                   <div key={player.id} className="relative group">
                     <PlayerCard
                       player={player}
                       showActions={false}
-                      className="cursor-move"
+                      className="cursor-pointer"
                     />
                     <Button
                       variant="destructive"
@@ -237,17 +222,17 @@ export function TeamRoster({
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
               <Users className="w-12 h-12 mb-2" />
               <p className="text-center">
-                Drop players here to build your team
+                Add players here to build your team
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3">
-              {players.map((player, index) => (
+              {players.map((player) => (
                 <div key={player.id} className="relative group">
                   <PlayerCard
                     player={player}
                     showActions={false}
-                    className="cursor-move"
+                    className="cursor-pointer"
                   />
                   <Button
                     variant="destructive"
