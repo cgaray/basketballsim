@@ -106,10 +106,11 @@ describe('TeamFiller', () => {
     const strategySelect = screen.getByRole('combobox');
     fireEvent.click(strategySelect);
 
-    expect(screen.getByText('Starting Five')).toBeInTheDocument();
-    expect(screen.getByText('Balanced Roster')).toBeInTheDocument();
-    expect(screen.getByText('Position Depth')).toBeInTheDocument();
-    expect(screen.getByText('Custom')).toBeInTheDocument();
+    // Use getAllByText and check that the options exist (there might be multiple instances)
+    expect(screen.getAllByText('Starting Five').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Balanced Roster').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Position Depth').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Custom').length).toBeGreaterThan(0);
   });
 
   it('shows preview of players to add', () => {

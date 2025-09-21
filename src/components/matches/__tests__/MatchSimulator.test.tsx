@@ -108,10 +108,14 @@ describe('MatchSimulator', () => {
       json: async () => ({}),
     });
 
+    // Ensure the mock is properly set up
     const mockSimulateMatch = jest.fn().mockReturnValue(mockMatchResult);
-    (SimulationEngine as jest.Mock).mockImplementation(() => ({
+    const mockSimulationEngine = jest.fn().mockImplementation(() => ({
       simulateMatch: mockSimulateMatch,
     }));
+
+    // Mock the SimulationEngine constructor
+    (SimulationEngine as jest.Mock).mockImplementation(mockSimulationEngine);
   });
 
   afterEach(() => {

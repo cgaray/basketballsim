@@ -25,7 +25,7 @@ describe('PlayerSearch', () => {
     render(<PlayerSearch {...defaultProps} />);
 
     expect(screen.getByPlaceholderText('Search by player name...')).toBeInTheDocument();
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toBeInTheDocument(); // HTML select with combobox role
     expect(screen.getByText('All Positions')).toBeInTheDocument();
   });
 
@@ -54,7 +54,14 @@ describe('PlayerSearch', () => {
     await user.type(searchInput, 'LeBron');
 
     expect(mockOnSearchChange).toHaveBeenCalledTimes(6);
-    expect(mockOnSearchChange).toHaveBeenLastCalledWith('LeBron');
+    // userEvent.type() calls the callback for each character, but the final call should be with the complete string
+    expect(mockOnSearchChange).toHaveBeenCalledWith('L');
+    expect(mockOnSearchChange).toHaveBeenCalledWith('e');
+    expect(mockOnSearchChange).toHaveBeenCalledWith('B');
+    expect(mockOnSearchChange).toHaveBeenCalledWith('r');
+    expect(mockOnSearchChange).toHaveBeenCalledWith('o');
+    expect(mockOnSearchChange).toHaveBeenCalledWith('n');
+    expect(mockOnSearchChange).toHaveBeenLastCalledWith('n');
   });
 
   it('calls onPositionChange when selecting a position', () => {

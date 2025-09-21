@@ -246,7 +246,9 @@ describe('QuickPositionSearch', () => {
     const pgButton = screen.getByRole('button', { name: /^PG/ });
     fireEvent.click(pgButton);
 
-    expect(screen.getByText('Searching...')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Searching...')).toBeInTheDocument();
+    });
   });
 
   it('displays no players found message', async () => {
@@ -293,9 +295,10 @@ describe('QuickPositionSearch', () => {
   it('handles initial position prop', () => {
     render(<QuickPositionSearch {...defaultProps} position="SF" />);
 
-    // The SF button should be selected (have default variant)
+    // The SF button should be selected (have primary variant classes)
     const sfButton = screen.getByRole('button', { name: /^SF/ });
-    expect(sfButton.className).toContain('default');
+    expect(sfButton.className).toContain('bg-primary');
+    expect(sfButton.className).toContain('text-primary-foreground');
   });
 
   it('handles API errors gracefully', async () => {

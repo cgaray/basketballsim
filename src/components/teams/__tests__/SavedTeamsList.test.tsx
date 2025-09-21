@@ -20,26 +20,58 @@ global.confirm = jest.fn(() => true);
 describe('SavedTeamsList', () => {
   const mockOnLoadTeam = jest.fn();
 
-  const mockPlayer = {
-    id: 1,
-    name: 'LeBron James',
-    position: 'SF',
-    team: 'LAL',
-    pointsPerGame: 27.1,
-    reboundsPerGame: 7.5,
-    assistsPerGame: 7.3,
-  };
+  const mockPlayers = [
+    {
+      id: 1,
+      name: 'Stephen Curry',
+      position: 'PG',
+      team: 'GSW',
+      pointsPerGame: 27.1,
+      reboundsPerGame: 4.5,
+      assistsPerGame: 6.3,
+    },
+    {
+      id: 2,
+      name: 'James Harden',
+      position: 'SG',
+      team: 'LAC',
+      pointsPerGame: 21.0,
+      reboundsPerGame: 6.1,
+      assistsPerGame: 10.7,
+    },
+    {
+      id: 3,
+      name: 'LeBron James',
+      position: 'SF',
+      team: 'LAL',
+      pointsPerGame: 25.7,
+      reboundsPerGame: 7.3,
+      assistsPerGame: 8.3,
+    },
+    {
+      id: 4,
+      name: 'Kevin Durant',
+      position: 'PF',
+      team: 'PHX',
+      pointsPerGame: 27.1,
+      reboundsPerGame: 6.6,
+      assistsPerGame: 5.0,
+    },
+    {
+      id: 5,
+      name: 'Nikola Jokic',
+      position: 'C',
+      team: 'DEN',
+      pointsPerGame: 24.5,
+      reboundsPerGame: 11.8,
+      assistsPerGame: 9.8,
+    },
+  ];
 
   const mockTeam = {
     id: 1,
     name: 'Dream Team',
-    players: [
-      { ...mockPlayer, id: 1, position: 'PG' },
-      { ...mockPlayer, id: 2, position: 'SG' },
-      { ...mockPlayer, id: 3, position: 'SF' },
-      { ...mockPlayer, id: 4, position: 'PF' },
-      { ...mockPlayer, id: 5, position: 'C' },
-    ],
+    players: mockPlayers,
     createdAt: '2024-01-01T00:00:00Z',
   };
 
@@ -267,7 +299,7 @@ describe('SavedTeamsList', () => {
     render(<SavedTeamsList onLoadTeam={mockOnLoadTeam} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to load teams')).toBeInTheDocument();
+      expect(screen.getByText('Network error')).toBeInTheDocument();
     });
   });
 
@@ -307,8 +339,8 @@ describe('SavedTeamsList', () => {
     const incompleteTeam = {
       ...mockTeam,
       players: [
-        { ...mockPlayer, id: 1, position: 'PG' },
-        { ...mockPlayer, id: 2, position: 'SG' },
+        { ...mockPlayers[0], id: 1, position: 'PG' },
+        { ...mockPlayers[1], id: 2, position: 'SG' },
         // Missing SF, PF, C
       ],
     };

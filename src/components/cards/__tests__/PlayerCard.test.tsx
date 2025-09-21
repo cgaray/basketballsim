@@ -8,31 +8,33 @@ import '@testing-library/jest-dom';
 import { PlayerCard } from '../PlayerCard';
 import { Player } from '@/types';
 
-// Mock the format utilities
-const mockFormatDecimal = jest.fn((value) => value?.toFixed(1) || 'N/A');
-const mockFormatPercentage = jest.fn((value) => value ? `${(value * 100).toFixed(1)}%` : 'N/A');
-const mockFormatPlayerName = jest.fn((name) => name?.trim() || '');
-const mockFormatTeamName = jest.fn((team) => team || 'Free Agent');
-const mockGetPositionAbbreviation = jest.fn((position) => {
-  const map: Record<string, string> = {
-    'Point Guard': 'PG',
-    'Shooting Guard': 'SG',
-    'Small Forward': 'SF',
-    'Power Forward': 'PF',
-    'Center': 'C',
-  };
-  return map[position] || position;
-});
-const mockCalculatePlayerEfficiency = jest.fn(() => 15.5);
+// Mock the format utilities before importing the component
+jest.mock('@/lib/utils/format', () => {
+  const mockFormatDecimal = jest.fn((value) => value?.toFixed(1) || 'N/A');
+  const mockFormatPercentage = jest.fn((value) => value ? `${(value * 100).toFixed(1)}%` : 'N/A');
+  const mockFormatPlayerName = jest.fn((name) => name?.trim() || '');
+  const mockFormatTeamName = jest.fn((team) => team || 'Free Agent');
+  const mockGetPositionAbbreviation = jest.fn((position) => {
+    const map: Record<string, string> = {
+      'Point Guard': 'PG',
+      'Shooting Guard': 'SG',
+      'Small Forward': 'SF',
+      'Power Forward': 'PF',
+      'Center': 'C',
+    };
+    return map[position] || position;
+  });
+  const mockCalculatePlayerEfficiency = jest.fn(() => 15.5);
 
-jest.mock('@/lib/utils/format', () => ({
-  formatDecimal: mockFormatDecimal,
-  formatPercentage: mockFormatPercentage,
-  formatPlayerName: mockFormatPlayerName,
-  formatTeamName: mockFormatTeamName,
-  getPositionAbbreviation: mockGetPositionAbbreviation,
-  calculatePlayerEfficiency: mockCalculatePlayerEfficiency,
-}));
+  return {
+    formatDecimal: mockFormatDecimal,
+    formatPercentage: mockFormatPercentage,
+    formatPlayerName: mockFormatPlayerName,
+    formatTeamName: mockFormatTeamName,
+    getPositionAbbreviation: mockGetPositionAbbreviation,
+    calculatePlayerEfficiency: mockCalculatePlayerEfficiency,
+  };
+});
 
 const mockPlayer: Player = {
   id: 1,
@@ -116,20 +118,22 @@ describe('PlayerCard', () => {
   it('shows "Add to Team" button when not selected', () => {
     render(<PlayerCard {...defaultProps} />);
 
-    expect(screen.getByText('Add to Team')).toBeInTheDocument();
+    expect(screen.getByText('Team 1')).toBeInTheDocument();
+    expect(screen.getByText('Team 2')).toBeInTheDocument();
   });
 
   it('shows "Remove" button when selected', () => {
     render(<PlayerCard {...defaultProps} isSelected={true} />);
 
-    expect(screen.getByText('Remove')).toBeInTheDocument();
+    expect(screen.getByText('Remove from Team')).toBeInTheDocument();
   });
 
   it('does not show action buttons when showActions is false', () => {
     render(<PlayerCard {...defaultProps} showActions={false} />);
 
-    expect(screen.queryByText('Add to Team')).not.toBeInTheDocument();
-    expect(screen.queryByText('Remove')).not.toBeInTheDocument();
+    expect(screen.queryByText('Team 1')).not.toBeInTheDocument();
+    expect(screen.queryByText('Team 2')).not.toBeInTheDocument();
+    expect(screen.queryByText('Remove from Team')).not.toBeInTheDocument();
   });
 
   it('handles player without team', () => {
