@@ -86,33 +86,52 @@ describe('PlayerCard', () => {
   });
 
 
-  it('applies selected styling when isSelected is true', () => {
-    render(<PlayerCard {...defaultProps} isSelected={true} />);
+  it('applies selected styling when isSelected is true with team 1', () => {
+    const { container } = render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={1} />);
 
-    const card = screen.getByRole('button');
-    expect(card).toHaveClass('ring-2', 'ring-primary');
+    const card = container.querySelector('.ring-2');
+    expect(card).toHaveClass('ring-blue-500');
   });
 
-  it('calls onDeselect when clicked and selected', () => {
-    const onDeselect = jest.fn();
-    render(<PlayerCard {...defaultProps} isSelected={true} onDeselect={onDeselect} />);
+  it('applies selected styling when isSelected is true with team 2', () => {
+    const { container } = render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={2} />);
 
-    fireEvent.click(screen.getByRole('button'));
-    expect(onDeselect).toHaveBeenCalledWith(mockPlayer);
+    const card = container.querySelector('.ring-2');
+    expect(card).toHaveClass('ring-green-500');
   });
 
-  it('calls onDeselect when clicked and selected', () => {
+  it('calls onDeselect when Remove button is clicked', () => {
     const onDeselect = jest.fn();
     render(
-      <PlayerCard 
-        {...defaultProps} 
-        isSelected={true} 
-        onDeselect={onDeselect} 
+      <PlayerCard
+        {...defaultProps}
+        isSelected={true}
+        selectedTeam={1}
+        onDeselect={onDeselect}
       />
     );
 
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByText(/Remove from Team/));
     expect(onDeselect).toHaveBeenCalledWith(mockPlayer);
+  });
+
+  it('calls onSelectTeam when Team 1 or Team 2 button is clicked', () => {
+    const onSelectTeam = jest.fn();
+    render(
+      <PlayerCard
+        {...defaultProps}
+        isSelected={false}
+        onSelectTeam={onSelectTeam}
+      />
+    );
+
+    // Click Team 1 button
+    fireEvent.click(screen.getByText('Team 1'));
+    expect(onSelectTeam).toHaveBeenCalledWith(mockPlayer, 1);
+
+    // Click Team 2 button
+    fireEvent.click(screen.getByText('Team 2'));
+    expect(onSelectTeam).toHaveBeenCalledWith(mockPlayer, 2);
   });
 
   it('shows "Add to Team" button when not selected', () => {
@@ -122,10 +141,10 @@ describe('PlayerCard', () => {
     expect(screen.getByText('Team 2')).toBeInTheDocument();
   });
 
-  it('shows "Remove" button when selected', () => {
-    render(<PlayerCard {...defaultProps} isSelected={true} />);
+  it('shows "Remove from Team" button with team number when selected', () => {
+    render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={1} />);
 
-    expect(screen.getByText('Remove from Team')).toBeInTheDocument();
+    expect(screen.getByText('Remove from Team 1')).toBeInTheDocument();
   });
 
   it('does not show action buttons when showActions is false', () => {
