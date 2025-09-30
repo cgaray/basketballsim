@@ -8,11 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MatchSimulator } from '@/components/matches/MatchSimulator';
 import { Navbar } from '@/components/layout/Navbar';
+import { Player } from '@/types';
 
 interface Team {
   id: number;
   name: string;
-  players: any[]; // Now contains full player objects
+  players: Player[]; // Now contains full player objects
 }
 
 export default function MatchesPage() {
