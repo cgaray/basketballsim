@@ -143,14 +143,31 @@ export async function PUT(
       data: updateData,
     });
 
-    const teamWithParsedPlayers = {
+    const playerIds = JSON.parse(updatedTeam.players);
+
+    // Get full player details - same as GET handler
+    const players = await prisma.player.findMany({
+      where: { id: { in: playerIds } },
+      select: {
+        id: true,
+        name: true,
+        position: true,
+        team: true,
+        season: true,
+        pointsPerGame: true,
+        reboundsPerGame: true,
+        assistsPerGame: true,
+      },
+    });
+
+    const teamWithPlayers = {
       ...updatedTeam,
-      players: JSON.parse(updatedTeam.players),
+      players,
     };
 
     return NextResponse.json({
       success: true,
-      data: teamWithParsedPlayers,
+      data: teamWithPlayers,
     });
 
   } catch (error) {
