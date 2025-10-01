@@ -4,34 +4,37 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { PlayerCard } from '../PlayerCard';
 import { Player } from '@/types';
 
-// Mock the format utilities
-const mockFormatDecimal = jest.fn((value) => value?.toFixed(1) || 'N/A');
-const mockFormatPercentage = jest.fn((value) => value ? `${(value * 100).toFixed(1)}%` : 'N/A');
-const mockFormatPlayerName = jest.fn((name) => name?.trim() || '');
-const mockFormatTeamName = jest.fn((team) => team || 'Free Agent');
-const mockGetPositionAbbreviation = jest.fn((position) => {
-  const map: Record<string, string> = {
-    'Point Guard': 'PG',
-    'Shooting Guard': 'SG',
-    'Small Forward': 'SF',
-    'Power Forward': 'PF',
-    'Center': 'C',
-  };
-  return map[position] || position;
-});
-const mockCalculatePlayerEfficiency = jest.fn(() => 15.5);
+// Mock the format utilities before importing the component
+jest.mock('@/lib/utils/format', () => {
+  const mockFormatDecimal = jest.fn((value) => value?.toFixed(1) || 'N/A');
+  const mockFormatPercentage = jest.fn((value) => value ? `${(value * 100).toFixed(1)}%` : 'N/A');
+  const mockFormatPlayerName = jest.fn((name) => name?.trim() || '');
+  const mockFormatTeamName = jest.fn((team) => team || 'Free Agent');
+  const mockGetPositionAbbreviation = jest.fn((position) => {
+    const map: Record<string, string> = {
+      'Point Guard': 'PG',
+      'Shooting Guard': 'SG',
+      'Small Forward': 'SF',
+      'Power Forward': 'PF',
+      'Center': 'C',
+    };
+    return map[position] || position;
+  });
+  const mockCalculatePlayerEfficiency = jest.fn(() => 15.5);
 
-jest.mock('@/lib/utils/format', () => ({
-  formatDecimal: mockFormatDecimal,
-  formatPercentage: mockFormatPercentage,
-  formatPlayerName: mockFormatPlayerName,
-  formatTeamName: mockFormatTeamName,
-  getPositionAbbreviation: mockGetPositionAbbreviation,
-  calculatePlayerEfficiency: mockCalculatePlayerEfficiency,
-}));
+  return {
+    formatDecimal: mockFormatDecimal,
+    formatPercentage: mockFormatPercentage,
+    formatPlayerName: mockFormatPlayerName,
+    formatTeamName: mockFormatTeamName,
+    getPositionAbbreviation: mockGetPositionAbbreviation,
+    calculatePlayerEfficiency: mockCalculatePlayerEfficiency,
+  };
+});
 
 const mockPlayer: Player = {
   id: 1,
@@ -83,52 +86,73 @@ describe('PlayerCard', () => {
   });
 
 
-  it('applies selected styling when isSelected is true', () => {
-    render(<PlayerCard {...defaultProps} isSelected={true} />);
+  it('applies selected styling when isSelected is true with team 1', () => {
+    const { container } = render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={1} />);
 
-    const card = screen.getByRole('button');
-    expect(card).toHaveClass('ring-2', 'ring-primary');
+    const card = container.querySelector('.ring-2');
+    expect(card).toHaveClass('ring-blue-500');
   });
 
-  it('calls onSelect when clicked and not selected', () => {
-    const onSelect = jest.fn();
-    render(<PlayerCard {...defaultProps} onSelect={onSelect} />);
+  it('applies selected styling when isSelected is true with team 2', () => {
+    const { container } = render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={2} />);
 
-    fireEvent.click(screen.getByRole('button'));
-    expect(onSelect).toHaveBeenCalledWith(mockPlayer);
+    const card = container.querySelector('.ring-2');
+    expect(card).toHaveClass('ring-green-500');
   });
 
-  it('calls onDeselect when clicked and selected', () => {
+  it('calls onDeselect when Remove button is clicked', () => {
     const onDeselect = jest.fn();
     render(
-      <PlayerCard 
-        {...defaultProps} 
-        isSelected={true} 
-        onDeselect={onDeselect} 
+      <PlayerCard
+        {...defaultProps}
+        isSelected={true}
+        selectedTeam={1}
+        onDeselect={onDeselect}
       />
     );
 
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByText(/Remove from Team/));
     expect(onDeselect).toHaveBeenCalledWith(mockPlayer);
+  });
+
+  it('calls onSelectTeam when Team 1 or Team 2 button is clicked', () => {
+    const onSelectTeam = jest.fn();
+    render(
+      <PlayerCard
+        {...defaultProps}
+        isSelected={false}
+        onSelectTeam={onSelectTeam}
+      />
+    );
+
+    // Click Team 1 button
+    fireEvent.click(screen.getByText('Team 1'));
+    expect(onSelectTeam).toHaveBeenCalledWith(mockPlayer, 1);
+
+    // Click Team 2 button
+    fireEvent.click(screen.getByText('Team 2'));
+    expect(onSelectTeam).toHaveBeenCalledWith(mockPlayer, 2);
   });
 
   it('shows "Add to Team" button when not selected', () => {
     render(<PlayerCard {...defaultProps} />);
 
-    expect(screen.getByText('Add to Team')).toBeInTheDocument();
+    expect(screen.getByText('Team 1')).toBeInTheDocument();
+    expect(screen.getByText('Team 2')).toBeInTheDocument();
   });
 
-  it('shows "Remove" button when selected', () => {
-    render(<PlayerCard {...defaultProps} isSelected={true} />);
+  it('shows "Remove from Team" button with team number when selected', () => {
+    render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={1} />);
 
-    expect(screen.getByText('Remove')).toBeInTheDocument();
+    expect(screen.getByText('Remove from Team 1')).toBeInTheDocument();
   });
 
   it('does not show action buttons when showActions is false', () => {
     render(<PlayerCard {...defaultProps} showActions={false} />);
 
-    expect(screen.queryByText('Add to Team')).not.toBeInTheDocument();
-    expect(screen.queryByText('Remove')).not.toBeInTheDocument();
+    expect(screen.queryByText('Team 1')).not.toBeInTheDocument();
+    expect(screen.queryByText('Team 2')).not.toBeInTheDocument();
+    expect(screen.queryByText('Remove from Team')).not.toBeInTheDocument();
   });
 
   it('handles player without team', () => {

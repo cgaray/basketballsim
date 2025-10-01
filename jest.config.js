@@ -9,7 +9,7 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   collectCoverageFrom: [
@@ -32,6 +32,14 @@ const customJestConfig = {
   ],
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+  },
+  globals: {
+    // Mock Next.js globals for API routes
+    Request: class Request {},
+    Response: class Response {},
+    Headers: class Headers {},
+    URL: class URL {},
+    URLSearchParams: class URLSearchParams {},
   },
 }
 

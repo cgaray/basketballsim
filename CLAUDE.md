@@ -37,10 +37,19 @@ The user prefers working in feature branches with a test-first development appro
    ```bash
    git checkout -b feature/descriptive-feature-name
    ```
-2. **Write tests first** (when applicable)
-3. **Implement the functionality**
-4. **Commit changes** with descriptive commit messages
-5. **Test thoroughly** before merging
+2. **Write tests FIRST** - Use Test-Driven Development (TDD):
+   - Write failing tests that define expected behavior
+   - Run tests to confirm they fail for the right reason
+   - Only then implement functionality to make tests pass
+   - Refactor while keeping tests green
+3. **Implement the functionality** to satisfy test requirements
+4. **Run all tests and linting** before committing:
+   ```bash
+   npm run test         # Ensure all tests pass
+   npm run lint         # Ensure code quality
+   ```
+5. **Commit changes** with descriptive commit messages
+6. **Test thoroughly** before merging
 
 ### Commit Message Format:
 Use conventional commits with the Claude Code footer:
@@ -141,11 +150,31 @@ Database URL configured via `DATABASE_URL` environment variable (defaults to `fi
 
 ### Testing Patterns
 
+**🔴 Test-Driven Development (TDD) is REQUIRED:**
+- **ALWAYS write tests BEFORE implementation**
+- Red-Green-Refactor cycle:
+  1. RED: Write a failing test
+  2. GREEN: Write minimal code to pass
+  3. REFACTOR: Improve code while keeping tests green
+
 Tests follow React Testing Library best practices:
 - Mock external dependencies at module level
 - Test user interactions over implementation details
 - Maintain test files adjacent to components in `__tests__/` directories
 - Coverage requirements: 70% for branches, functions, lines, and statements
+
+**Test Organization:**
+- Component tests: `src/components/[feature]/__tests__/[Component].test.tsx`
+- Hook tests: `src/hooks/__tests__/[hookName].test.ts`
+- Utility tests: `src/lib/[module]/__tests__/[utility].test.ts`
+- API route tests: `src/app/api/[route]/__tests__/route.test.ts`
+
+**Testing Checklist for New Features:**
+- [ ] Unit tests for all new functions/utilities
+- [ ] Component tests with user interaction scenarios
+- [ ] Integration tests for API routes
+- [ ] Edge cases and error handling
+- [ ] Accessibility requirements (WCAG 2.1 AA)
 
 ### Import Aliases
 

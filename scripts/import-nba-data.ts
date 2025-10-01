@@ -174,24 +174,24 @@ async function importNBAData() {
         COALESCE(pp.position, 'SF') as position,
         ss.team,
         ss.season,
-        ss.games_played,
-        ROUND(ss.ppg, 1) as points_per_game,
-        ROUND(ss.rpg, 1) as rebounds_per_game,
-        ROUND(ss.apg, 1) as assists_per_game,
-        ROUND(ss.spg, 1) as steals_per_game,
-        ROUND(ss.bpg, 1) as blocks_per_game,
+        ss.games_played as gamesPlayed,
+        ROUND(ss.ppg, 1) as pointsPerGame,
+        ROUND(ss.rpg, 1) as reboundsPerGame,
+        ROUND(ss.apg, 1) as assistsPerGame,
+        ROUND(ss.spg, 1) as stealsPerGame,
+        ROUND(ss.bpg, 1) as blocksPerGame,
         ROUND(CASE
           WHEN ss.total_fga > 0 THEN ss.total_fgm::FLOAT / ss.total_fga
           ELSE 0
-        END, 3) as field_goal_percentage,
+        END, 3) as fieldGoalPercentage,
         ROUND(CASE
           WHEN ss.total_3pa > 0 THEN ss.total_3pm::FLOAT / ss.total_3pa
           ELSE 0
-        END, 3) as three_point_percentage,
+        END, 3) as threePointPercentage,
         ROUND(CASE
           WHEN ss.total_fta > 0 THEN ss.total_ftm::FLOAT / ss.total_fta
           ELSE 0
-        END, 3) as free_throw_percentage
+        END, 3) as freeThrowPercentage
       FROM season_stats ss
       LEFT JOIN player_positions pp ON ss.personId = pp.personId
       WHERE
@@ -216,7 +216,7 @@ async function importNBAData() {
     playerSeasons.slice(0, 10).forEach((player, i) => {
       console.log(
         `   ${(i + 1).toString().padStart(2)}. ${player.name.padEnd(25)} ` +
-        `(${player.team} ${player.season}): ${player.points_per_game} PPG`
+        `(${player.team} ${player.season}): ${player.pointsPerGame} PPG`
       );
     });
 
@@ -244,15 +244,15 @@ async function importNBAData() {
           position: p.position,
           team: p.team,
           season: Number(p.season),  // Convert BigInt to Number
-          gamesPlayed: Number(p.games_played),  // Convert BigInt to Number
-          pointsPerGame: p.points_per_game,
-          reboundsPerGame: p.rebounds_per_game,
-          assistsPerGame: p.assists_per_game,
-          stealsPerGame: p.steals_per_game,
-          blocksPerGame: p.blocks_per_game,
-          fieldGoalPercentage: p.field_goal_percentage,
-          threePointPercentage: p.three_point_percentage,
-          freeThrowPercentage: p.free_throw_percentage,
+          gamesPlayed: Number(p.gamesPlayed),  // Convert BigInt to Number
+          pointsPerGame: p.pointsPerGame,
+          reboundsPerGame: p.reboundsPerGame,
+          assistsPerGame: p.assistsPerGame,
+          stealsPerGame: p.stealsPerGame,
+          blocksPerGame: p.blocksPerGame,
+          fieldGoalPercentage: p.fieldGoalPercentage,
+          threePointPercentage: p.threePointPercentage,
+          freeThrowPercentage: p.freeThrowPercentage,
           imageUrl: null,
         })),
       });

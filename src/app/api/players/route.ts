@@ -5,12 +5,50 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database/prisma';
-import type { APIResponse, PlayerSearchResult } from '@/types';
+import type { APIResponse, PlayerSearchResult, Player } from '@/types';
+
+type PrismaPlayer = {
+  id: number;
+  name: string;
+  position: string;
+  team: string | null;
+  season: number | null;
+  gamesPlayed: number | null;
+  pointsPerGame: number | null;
+  reboundsPerGame: number | null;
+  assistsPerGame: number | null;
+  stealsPerGame: number | null;
+  blocksPerGame: number | null;
+  fieldGoalPercentage: number | null;
+  threePointPercentage: number | null;
+  freeThrowPercentage: number | null;
+  imageUrl: string | null;
+  createdAt: Date;
+};
+
+// Helper function to convert null values to undefined for optional fields
+function normalizePlayer(player: PrismaPlayer): Player {
+  return {
+    ...player,
+    team: player.team ?? undefined,
+    season: player.season ?? undefined,
+    gamesPlayed: player.gamesPlayed ?? undefined,
+    pointsPerGame: player.pointsPerGame ?? undefined,
+    reboundsPerGame: player.reboundsPerGame ?? undefined,
+    assistsPerGame: player.assistsPerGame ?? undefined,
+    stealsPerGame: player.stealsPerGame ?? undefined,
+    blocksPerGame: player.blocksPerGame ?? undefined,
+    fieldGoalPercentage: player.fieldGoalPercentage ?? undefined,
+    threePointPercentage: player.threePointPercentage ?? undefined,
+    freeThrowPercentage: player.freeThrowPercentage ?? undefined,
+    imageUrl: player.imageUrl ?? undefined,
+  };
+}
 
 export async function GET(request: NextRequest): Promise<NextResponse<APIResponse<PlayerSearchResult>>> {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     // Parse simplified query parameters
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -18,7 +56,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<APIRespons
     const position = searchParams.get('position') || '';
 
     // Build simplified where clause
-    const where: any = {};
+    const where: Record<string, any> = {};
 
     if (search) {
       where.name = {
@@ -68,7 +106,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<APIRespons
     ]);
 
     const result: PlayerSearchResult = {
-      players,
+      players: players.map(normalizePlayer),
       pagination: {
         page,
         limit,
