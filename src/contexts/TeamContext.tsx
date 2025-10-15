@@ -19,10 +19,22 @@ interface TeamState {
   team2: SingleTeamState;
   isLoading: boolean;
   error: string | null;
+  successMessage: string | null;
 }
 
 interface TeamAction {
-  type: 'ADD_PLAYER' | 'REMOVE_PLAYER' | 'SET_TEAM_NAME' | 'CLEAR_ROSTER' | 'SET_LOADING' | 'SET_ERROR' | 'LOAD_TEAM' | 'CLEAR_ALL' | 'ADD_MULTIPLE_PLAYERS';
+  type:
+    | 'ADD_PLAYER'
+    | 'REMOVE_PLAYER'
+    | 'SET_TEAM_NAME'
+    | 'CLEAR_ROSTER'
+    | 'CLEAR_ROSTER_KEEP_NAME'
+    | 'SET_LOADING'
+    | 'SET_ERROR'
+    | 'SET_SUCCESS'
+    | 'LOAD_TEAM'
+    | 'CLEAR_ALL'
+    | 'ADD_MULTIPLE_PLAYERS';
   payload?: Player | string | boolean | number | { players: Player[]; name: string } | Player[];
   teamId?: 1 | 2;
 }
@@ -53,6 +65,7 @@ const initialState: TeamState = {
   },
   isLoading: false,
   error: null,
+  successMessage: null,
 };
 
 function teamReducer(state: TeamState, action: TeamAction): TeamState {
@@ -84,6 +97,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: updatedTeam,
         error: null,
+        successMessage: null,
       };
 
     case 'REMOVE_PLAYER':
@@ -96,6 +110,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: filteredTeam,
         error: null,
+        successMessage: null,
       };
 
     case 'SET_TEAM_NAME':
@@ -107,6 +122,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
       return {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: namedTeam,
+        successMessage: null,
       };
 
     case 'CLEAR_ROSTER':
@@ -118,6 +134,19 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
       return {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: clearedTeam,
+        error: null,
+        successMessage: null,
+      };
+
+    case 'CLEAR_ROSTER_KEEP_NAME':
+      const clearedRosterKeepName = {
+        ...currentTeam,
+        roster: [],
+      };
+
+      return {
+        ...state,
+        [teamId === 1 ? 'team1' : 'team2']: clearedRosterKeepName,
         error: null,
       };
 
@@ -132,6 +161,15 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         error: action.payload,
         isLoading: false,
+        successMessage: null,
+      };
+
+    case 'SET_SUCCESS':
+      return {
+        ...state,
+        successMessage: action.payload,
+        error: null,
+        isLoading: false,
       };
 
     case 'LOAD_TEAM':
@@ -144,6 +182,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: loadedTeam,
         error: null,
+        successMessage: null,
         isLoading: false,
       };
 
@@ -153,6 +192,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         team1: { roster: [], teamName: '' },
         team2: { roster: [], teamName: '' },
         error: null,
+        successMessage: null,
       };
 
     case 'ADD_MULTIPLE_PLAYERS':
@@ -181,6 +221,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: updatedTeamWithMultiple,
         error: null,
+        successMessage: null,
       };
 
     default:
@@ -247,7 +288,8 @@ export function TeamProvider({ children }: { children: ReactNode }) {
       }
 
       dispatch({ type: 'SET_LOADING', payload: false });
-      dispatch({ type: 'CLEAR_ROSTER', teamId });
+      dispatch({ type: 'SET_SUCCESS', payload: `Saved ${team.teamName}` });
+      dispatch({ type: 'CLEAR_ROSTER_KEEP_NAME', teamId });
 
     } catch (error) {
       dispatch({

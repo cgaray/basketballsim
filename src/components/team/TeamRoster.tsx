@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Users, Save, Trash2, Trophy, Search, Plus } from 'lucide-react';
+import { AlertCircle, Users, Save, Trash2, Trophy, Search, Plus, CheckCircle } from 'lucide-react';
 import { useTeam } from '@/contexts/TeamContext';
 import { Player } from '@/types';
 import { QuickPositionSearch } from '@/components/players/QuickPositionSearch';
@@ -98,6 +98,7 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
     isValidRoster,
     isLoading,
     error,
+    successMessage,
   } = useTeam();
 
   const [showQuickSearch, setShowQuickSearch] = useState(false);
@@ -194,6 +195,15 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
             <div className="flex items-center gap-2 text-destructive text-sm">
               <AlertCircle className="w-4 h-4" />
               {error}
+            </div>
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2 text-green-700 text-sm">
+              <CheckCircle className="w-4 h-4" />
+              {successMessage}
             </div>
           </div>
         )}
