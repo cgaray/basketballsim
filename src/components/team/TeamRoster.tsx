@@ -66,7 +66,7 @@ function PositionGroup({ position, players, onRemove, onQuickAdd }: PositionGrou
               <div className="flex-1">
                 <div className="font-medium text-sm">{player.name}</div>
                 <div className="text-xs text-muted-foreground">
-                  {player.team} • {player.pointsPerGame} PPG
+                  {player.team} • {player.pointsPerGame.toFixed(1)} PPG
                 </div>
               </div>
               <Button

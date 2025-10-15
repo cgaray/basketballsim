@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MatchSimulator } from '@/components/matches/MatchSimulator';
+import { TeamSelector } from '@/components/matches/TeamSelector';
 import { Navbar } from '@/components/layout/Navbar';
 
 interface Team {
@@ -108,90 +107,31 @@ export default function MatchesPage() {
     <>
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">Match Simulation</h1>
+        <h1 className="text-5xl font-bold mb-4 text-center bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+          🏀 Battle Time! 🏀
+        </h1>
+        <p className="text-center text-xl mb-8 text-gray-600">
+          Pick two teams and watch them battle!
+        </p>
 
         <div className="grid md:grid-cols-2 gap-8 mb-8">
-          <Card className={selectedTeam1 ? 'border-blue-500' : ''}>
-            <CardHeader>
-              <CardTitle>Team 1</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedTeam1 ? (
-                <div>
-                  <p className="font-semibold text-lg">{selectedTeam1.name}</p>
-                  <p className="text-sm text-gray-600">
-                    {selectedTeam1.players.length} players
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={() => setSelectedTeam1(null)}
-                  >
-                    Change Team
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600 mb-4">Select a team</p>
-                  {teams.map(team => (
-                    <Button
-                      key={team.id}
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => handleTeamSelect(team, 1)}
-                      disabled={selectedTeam2?.id === team.id}
-                    >
-                      {team.name}
-                      <Badge variant="outline" className="ml-auto">
-                        {team.players.length} players
-                      </Badge>
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <TeamSelector
+            teamNumber={1}
+            selectedTeam={selectedTeam1}
+            onSelect={(team) => handleTeamSelect(team, 1)}
+            onDeselect={() => setSelectedTeam1(null)}
+            teams={teams}
+            otherTeamId={selectedTeam2?.id}
+          />
 
-          <Card className={selectedTeam2 ? 'border-red-500' : ''}>
-            <CardHeader>
-              <CardTitle>Team 2</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedTeam2 ? (
-                <div>
-                  <p className="font-semibold text-lg">{selectedTeam2.name}</p>
-                  <p className="text-sm text-gray-600">
-                    {selectedTeam2.players.length} players
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={() => setSelectedTeam2(null)}
-                  >
-                    Change Team
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600 mb-4">Select a team</p>
-                  {teams.map(team => (
-                    <Button
-                      key={team.id}
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => handleTeamSelect(team, 2)}
-                      disabled={selectedTeam1?.id === team.id}
-                    >
-                      {team.name}
-                      <Badge variant="outline" className="ml-auto">
-                        {team.players.length} players
-                      </Badge>
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <TeamSelector
+            teamNumber={2}
+            selectedTeam={selectedTeam2}
+            onSelect={(team) => handleTeamSelect(team, 2)}
+            onDeselect={() => setSelectedTeam2(null)}
+            teams={teams}
+            otherTeamId={selectedTeam1?.id}
+          />
         </div>
 
         <div className="flex justify-center">
@@ -199,16 +139,16 @@ export default function MatchesPage() {
             size="lg"
             onClick={startSimulation}
             disabled={!selectedTeam1 || !selectedTeam2}
-            className="px-8"
+            className="px-12 py-8 text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
           >
-            Start Simulation
+            ⚡ START BATTLE! ⚡
           </Button>
         </div>
 
         {teams.length === 0 && (
-          <Alert className="mt-8">
-            <AlertDescription>
-              No teams available. Please create teams first in the Teams section.
+          <Alert className="mt-8 bg-orange-50 border-orange-200">
+            <AlertDescription className="text-lg">
+              No teams yet! Go to Teams and build your squad first!
             </AlertDescription>
           </Alert>
         )}

@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { MatchSimulator } from '../MatchSimulator';
 import { SimulationEngine } from '@/lib/simulation/engine';
 import { MatchResult } from '@/lib/simulation/types';
@@ -14,6 +14,7 @@ jest.mock('@/lib/simulation/engine');
 // Mock fetch
 global.fetch = jest.fn();
 
+// TODO: Fix timing issues with animation in tests
 describe('MatchSimulator', () => {
   const mockTeam1 = {
     id: 1,
@@ -115,7 +116,7 @@ describe('MatchSimulator', () => {
       json: async () => ({}),
     });
 
-    // Mock SimulationEngine
+    // Mock SimulationEngine to return instantly (no animation)
     (SimulationEngine as jest.Mock).mockImplementation(() => ({
       simulateMatch: jest.fn().mockReturnValue(mockMatchResult),
     }));
@@ -142,6 +143,7 @@ describe('MatchSimulator', () => {
   it('displays final score after simulation', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
 
+    // Wait for simulation to complete (with animation)
     await waitFor(() => {
       expect(screen.getByText('Final Score')).toBeInTheDocument();
       expect(screen.getByText('108')).toBeInTheDocument();
@@ -152,6 +154,8 @@ describe('MatchSimulator', () => {
   it('highlights winning team', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
 
+    // Removed fake timer advance
+
     await waitFor(() => {
       const lakersScore = screen.getByText('108').closest('div');
       expect(lakersScore).toHaveClass('text-green-600');
@@ -160,6 +164,8 @@ describe('MatchSimulator', () => {
 
   it('displays quarter breakdown', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
+
+    // Removed fake timer advance
 
     await waitFor(() => {
       expect(screen.getByText('Quarter Scores')).toBeInTheDocument();
@@ -173,6 +179,8 @@ describe('MatchSimulator', () => {
   it('displays MVP information', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
 
+    // Removed fake timer advance
+
     await waitFor(() => {
       expect(screen.getByText('MVP')).toBeInTheDocument();
       expect(screen.getByText('LeBron James')).toBeInTheDocument();
@@ -185,6 +193,8 @@ describe('MatchSimulator', () => {
   it('shows play-by-play section', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
 
+    // Removed fake timer advance
+
     await waitFor(() => {
       expect(screen.getByText('Play-by-Play')).toBeInTheDocument();
     });
@@ -192,6 +202,8 @@ describe('MatchSimulator', () => {
 
   it('toggles play-by-play details', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
+
+    // Removed fake timer advance
 
     await waitFor(() => {
       const toggleButton = screen.getByText('Show Details');
@@ -210,6 +222,8 @@ describe('MatchSimulator', () => {
   it('calls onBack when back button clicked', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
 
+    // Removed fake timer advance
+
     await waitFor(() => {
       expect(screen.getByText('Back to Team Selection')).toBeInTheDocument();
     });
@@ -220,6 +234,8 @@ describe('MatchSimulator', () => {
 
   it('allows simulation to be run again', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
+
+    // Removed fake timer advance
 
     await waitFor(() => {
       expect(screen.getByText('Simulate Again')).toBeInTheDocument();
@@ -234,6 +250,8 @@ describe('MatchSimulator', () => {
 
   it('saves match result to API', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
+
+    // Removed fake timer advance
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
@@ -255,6 +273,8 @@ describe('MatchSimulator', () => {
     }));
 
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
+
+    // Removed fake timer advance
 
     await waitFor(() => {
       expect(screen.getByText(/Simulation failed/i)).toBeInTheDocument();
@@ -281,6 +301,9 @@ describe('MatchSimulator', () => {
 
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
 
+    // 5 quarters: 500ms initial + 5 * 1000ms
+    // Removed fake timer advance
+
     await waitFor(() => {
       expect(screen.getByText('OT1')).toBeInTheDocument();
     });
@@ -288,6 +311,8 @@ describe('MatchSimulator', () => {
 
   it('creates SimulationEngine with correct team data', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
+
+    // Removed fake timer advance
 
     await waitFor(() => {
       expect(SimulationEngine).toHaveBeenCalledWith(
@@ -312,6 +337,8 @@ describe('MatchSimulator', () => {
   it('displays team names in score display', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
 
+    // Removed fake timer advance
+
     await waitFor(() => {
       expect(screen.getByText('Lakers')).toBeInTheDocument();
       expect(screen.getByText('Warriors')).toBeInTheDocument();
@@ -320,6 +347,8 @@ describe('MatchSimulator', () => {
 
   it('shows possession details with timestamps', async () => {
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
+
+    // Removed fake timer advance
 
     await waitFor(() => {
       expect(screen.getByText('Show Details')).toBeInTheDocument();
@@ -358,6 +387,8 @@ describe('MatchSimulator', () => {
     }));
 
     render(<MatchSimulator team1={mockTeam1} team2={mockTeam2} onBack={mockOnBack} />);
+
+    // Removed fake timer advance
 
     await waitFor(() => {
       expect(screen.getByText('Show Details')).toBeInTheDocument();
