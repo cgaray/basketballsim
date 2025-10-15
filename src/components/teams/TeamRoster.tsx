@@ -1,18 +1,17 @@
 /**
  * TeamRoster Component
- * Displays a team's roster with drag and drop functionality
+ * Displays a team's roster with drag and drop functionality using @dnd-kit
  */
 
 import React, { useState, useEffect } from 'react';
-import { Droppable, Draggable } from 'react-beautiful-dnd';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Input } from '@/components/ui/input';
 import { PlayerCard } from '@/components/cards/PlayerCard';
 import { Player, Position } from '@/types';
-import { useTeamBuilder, TeamValidationResult } from '@/hooks/useTeamBuilder';
+import { TeamValidationResult } from '@/hooks/useTeamBuilder';
 import { AlertTriangle, CheckCircle, X, Users } from 'lucide-react';
 
 interface TeamRosterProps {
@@ -25,6 +24,55 @@ interface TeamRosterProps {
   isDropDisabled?: boolean;
 }
 
+interface SortablePlayerItemProps {
+  player: Player;
+  onRemove: (player: Player) => void;
+}
+
+function SortablePlayerItem({ player, onRemove }: SortablePlayerItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: player.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="relative group"
+    >
+      <PlayerCard
+        player={player}
+        showActions={false}
+        className="cursor-move"
+      />
+      <Button
+        variant="destructive"
+        size="sm"
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(player);
+        }}
+      >
+        <X className="w-3 h-3" />
+      </Button>
+    </div>
+  );
+}
+
 export function TeamRoster({
   teamId,
   teamName,
@@ -35,21 +83,14 @@ export function TeamRoster({
   isDropDisabled = false,
 }: TeamRosterProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const { setNodeRef, isOver } = useDroppable({
+    id: `team-${teamId}`,
+    disabled: isDropDisabled,
+  });
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  const getPositionBadgeVariant = (position: Position): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    const variants = {
-      PG: 'default' as const,
-      SG: 'secondary' as const,
-      SF: 'outline' as const,
-      PF: 'destructive' as const,
-      C: 'default' as const,
-    };
-    return variants[position] || 'outline';
-  };
 
   const getTeamBorder = () => {
     return teamId === 1 ? 'border-primary' : 'border-emerald-600';
@@ -99,7 +140,7 @@ export function TeamRoster({
           </div>
 
           {/* Position Summary */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap mt-2">
             {Object.entries(validation.positionCounts).map(([position, count]) => (
               <div
                 key={position}
@@ -145,7 +186,7 @@ export function TeamRoster({
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3">
-                {players.map((player, index) => (
+                {players.map((player) => (
                   <div key={player.id} className="relative group">
                     <PlayerCard
                       player={player}
@@ -197,7 +238,7 @@ export function TeamRoster({
         </div>
 
         {/* Position Summary */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap mt-2">
           {Object.entries(validation.positionCounts).map(([position, count]) => (
             <div
               key={position}
@@ -233,64 +274,38 @@ export function TeamRoster({
       </CardHeader>
 
       <CardContent className="pt-0">
-        <Droppable droppableId={`team-${teamId}`} isDropDisabled={isDropDisabled}>
-          {(provided, snapshot) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className={`min-h-[400px] transition-colors ${
-                snapshot.isDraggingOver
-                  ? 'bg-primary/5 border-2 border-dashed border-primary'
-                  : 'bg-muted'
-              } rounded-lg p-4`}
-            >
-              {players.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                  <Users className="w-12 h-12 mb-2" />
-                  <p className="text-center">
-                    Drop players here to build your team
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-3">
-                  {players.map((player, index) => (
-                    <Draggable
-                      key={player.id}
-                      draggableId={`player-${player.id}`}
-                      index={index}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`${snapshot.isDragging ? 'opacity-50' : ''}`}
-                        >
-                          <div className="relative group">
-                            <PlayerCard
-                              player={player}
-                              showActions={false}
-                              className="cursor-move"
-                            />
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => onRemovePlayer(player)}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                </div>
-              )}
-              {provided.placeholder}
+        <div
+          ref={setNodeRef}
+          className={`min-h-[400px] transition-colors ${
+            isOver
+              ? 'bg-primary/5 border-2 border-dashed border-primary'
+              : 'bg-muted'
+          } rounded-lg p-4`}
+        >
+          {players.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+              <Users className="w-12 h-12 mb-2" />
+              <p className="text-center">
+                Drop players here to build your team
+              </p>
             </div>
+          ) : (
+            <SortableContext
+              items={players.map(p => p.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="grid grid-cols-1 gap-3">
+                {players.map((player) => (
+                  <SortablePlayerItem
+                    key={player.id}
+                    player={player}
+                    onRemove={onRemovePlayer}
+                  />
+                ))}
+              </div>
+            </SortableContext>
           )}
-        </Droppable>
+        </div>
       </CardContent>
     </Card>
   );
