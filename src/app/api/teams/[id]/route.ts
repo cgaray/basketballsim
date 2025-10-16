@@ -67,12 +67,22 @@ export async function GET(
         pointsPerGame: true,
         reboundsPerGame: true,
         assistsPerGame: true,
+        stealsPerGame: true,
+        blocksPerGame: true,
+        fieldGoalPercentage: true,
+        threePointPercentage: true,
+        freeThrowPercentage: true,
       },
     });
 
+    // Maintain the original order of playerIds
+    const orderedPlayers = playerIds.map(id =>
+      players.find(p => p.id === id)
+    ).filter(Boolean);
+
     const teamWithPlayers = {
       ...team,
-      players,
+      players: orderedPlayers,
     };
 
     return NextResponse.json({
@@ -157,12 +167,22 @@ export async function PUT(
         pointsPerGame: true,
         reboundsPerGame: true,
         assistsPerGame: true,
+        stealsPerGame: true,
+        blocksPerGame: true,
+        fieldGoalPercentage: true,
+        threePointPercentage: true,
+        freeThrowPercentage: true,
       },
     });
 
+    // Maintain the original order of playerIds
+    const orderedPlayers = playerIds.map(id =>
+      players.find(p => p.id === id)
+    ).filter(Boolean);
+
     const teamWithPlayers = {
       ...updatedTeam,
-      players,
+      players: orderedPlayers,
     };
 
     return NextResponse.json({
