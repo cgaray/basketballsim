@@ -10,6 +10,13 @@ import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 import { useTeam } from '@/contexts/TeamContext';
 import { Navbar } from '@/components/layout/Navbar';
 
+interface SavedTeam {
+  id: number;
+  name: string;
+  players: Player[];
+  createdAt: string;
+}
+
 export default function TeamsPage() {
   const { addPlayer, removePlayer, isPlayerInTeam } = useTeam();
   const [players, setPlayers] = useState<Player[]>([]);

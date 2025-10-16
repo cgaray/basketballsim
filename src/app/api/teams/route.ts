@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database/prisma';
-import type { APIResponse } from '@/types';
+import type { APIResponse, Player } from '@/types';
 
 interface CreateTeamRequest {
   name: string;
@@ -15,7 +15,7 @@ interface CreateTeamRequest {
 interface Team {
   id: number;
   name: string;
-  players: any[]; // Will be full player objects after fetching
+  players: Player[]; // Will be full player objects after fetching
   createdAt: Date;
 }
 
@@ -124,14 +124,39 @@ export async function POST(request: NextRequest): Promise<NextResponse<APIRespon
       },
     });
 
-    const teamWithParsedPlayers = {
+    // Get full player details for the created team
+    const fullPlayers = await prisma.player.findMany({
+      where: { id: { in: players } },
+      select: {
+        id: true,
+        name: true,
+        position: true,
+        team: true,
+        season: true,
+        pointsPerGame: true,
+        reboundsPerGame: true,
+        assistsPerGame: true,
+        stealsPerGame: true,
+        blocksPerGame: true,
+        fieldGoalPercentage: true,
+        threePointPercentage: true,
+        freeThrowPercentage: true,
+      },
+    });
+
+    // Maintain the original order of playerIds
+    const orderedPlayers = players.map(id =>
+      fullPlayers.find(p => p.id === id)
+    ).filter(Boolean);
+
+    const teamWithFullPlayers = {
       ...team,
-      players: JSON.parse(team.players),
+      players: orderedPlayers,
     };
 
     return NextResponse.json({
       success: true,
-      data: teamWithParsedPlayers,
+      data: teamWithFullPlayers,
     });
 
   } catch (error) {

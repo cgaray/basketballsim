@@ -5,7 +5,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database/prisma';
-import type { APIResponse } from '@/types';
+import { Prisma } from '@prisma/client';
+import type { APIResponse, Player } from '@/types';
 
 interface UpdateTeamRequest {
   name?: string;
@@ -15,7 +16,7 @@ interface UpdateTeamRequest {
 interface TeamWithPlayers {
   id: number;
   name: string;
-  players: any[];
+  players: Player[];
   createdAt: Date;
 }
 
@@ -66,12 +67,22 @@ export async function GET(
         pointsPerGame: true,
         reboundsPerGame: true,
         assistsPerGame: true,
+        stealsPerGame: true,
+        blocksPerGame: true,
+        fieldGoalPercentage: true,
+        threePointPercentage: true,
+        freeThrowPercentage: true,
       },
     });
 
+    // Maintain the original order of playerIds
+    const orderedPlayers = playerIds.map(id =>
+      players.find(p => p.id === id)
+    ).filter(Boolean);
+
     const teamWithPlayers = {
       ...team,
-      players,
+      players: orderedPlayers,
     };
 
     return NextResponse.json({
@@ -95,7 +106,7 @@ export async function GET(
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
-): Promise<NextResponse<APIResponse<any>>> {
+): Promise<NextResponse<APIResponse<TeamWithPlayers>>> {
   try {
     const teamId = parseInt(params.id);
     const body: UpdateTeamRequest = await request.json();
@@ -111,7 +122,7 @@ export async function PUT(
       );
     }
 
-    const updateData: any = {};
+    const updateData: Prisma.TeamUpdateInput = {};
 
     if (body.name) {
       updateData.name = body.name;
@@ -142,14 +153,41 @@ export async function PUT(
       data: updateData,
     });
 
-    const teamWithParsedPlayers = {
+    const playerIds = JSON.parse(updatedTeam.players);
+
+    // Get full player details - same as GET handler
+    const players = await prisma.player.findMany({
+      where: { id: { in: playerIds } },
+      select: {
+        id: true,
+        name: true,
+        position: true,
+        team: true,
+        season: true,
+        pointsPerGame: true,
+        reboundsPerGame: true,
+        assistsPerGame: true,
+        stealsPerGame: true,
+        blocksPerGame: true,
+        fieldGoalPercentage: true,
+        threePointPercentage: true,
+        freeThrowPercentage: true,
+      },
+    });
+
+    // Maintain the original order of playerIds
+    const orderedPlayers = playerIds.map(id =>
+      players.find(p => p.id === id)
+    ).filter(Boolean);
+
+    const teamWithPlayers = {
       ...updatedTeam,
-      players: JSON.parse(updatedTeam.players),
+      players: orderedPlayers,
     };
 
     return NextResponse.json({
       success: true,
-      data: teamWithParsedPlayers,
+      data: teamWithPlayers,
     });
 
   } catch (error) {

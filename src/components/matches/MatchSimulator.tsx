@@ -7,11 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { SimulationEngine } from '@/lib/simulation/engine';
 import { MatchResult, SimulationPlayer, SimulationTeam } from '@/lib/simulation/types';
+import { Player } from '@/types';
 
 interface Team {
   id: number;
   name: string;
-  players: any[]; // Now contains full player objects
+  players: Player[]; // Now contains full player objects
 }
 
 interface MatchSimulatorProps {
