@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import type { Player } from '@/types';
-import { findBestPlayersByPosition } from '@/lib/utils/player-stats';
+import { findBestPlayersByPosition, findWorstPlayersByPosition } from '@/lib/utils/player-stats';
 
 interface SingleTeamState {
   roster: Player[];
@@ -52,6 +52,7 @@ interface TeamContextType extends TeamState {
   isPlayerInTeam: (playerId: number) => 1 | 2 | null;
   addMultiplePlayers: (players: Player[], teamId: 1 | 2) => void;
   fillTeamWithBestPlayers: (availablePlayers: Player[], teamId: 1 | 2, requirements?: Record<string, number>) => void;
+  fillTeamWithWorstPlayers: (availablePlayers: Player[], teamId: 1 | 2, requirements?: Record<string, number>) => void;
 }
 
 const initialState: TeamState = {
@@ -288,8 +289,9 @@ export function TeamProvider({ children }: { children: ReactNode }) {
       }
 
       dispatch({ type: 'SET_LOADING', payload: false });
-      dispatch({ type: 'SET_SUCCESS', payload: `Saved ${team.teamName}` });
-      dispatch({ type: 'CLEAR_ROSTER_KEEP_NAME', teamId });
+      dispatch({ type: 'SET_SUCCESS', payload: `Team "${team.teamName}" saved! Keep editing or save again.` });
+      // Don't clear roster - allow continued editing
+      // dispatch({ type: 'CLEAR_ROSTER_KEEP_NAME', teamId });
 
     } catch (error) {
       dispatch({
@@ -381,6 +383,30 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const fillTeamWithWorstPlayers = (availablePlayers: Player[], teamId: 1 | 2, requirements: Record<string, number> = { PG: 1, SG: 1, SF: 1, PF: 1, C: 1 }) => {
+    try {
+      // Get all players currently in both teams
+      const allCurrentPlayers = [...state.team1.roster, ...state.team2.roster];
+      const takenPlayerIds = new Set(allCurrentPlayers.map(p => p.id));
+
+      const worstPlayersByPosition = findWorstPlayersByPosition(
+        availablePlayers,
+        takenPlayerIds,
+        requirements
+      );
+
+      // Flatten all selected players
+      const selectedPlayers = Object.values(worstPlayersByPosition).flat();
+
+      if (selectedPlayers.length > 0) {
+        addMultiplePlayers(selectedPlayers, teamId);
+      }
+    } catch (error) {
+      console.error('Error filling team with worst players:', error);
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to fill team with worst players' });
+    }
+  };
+
   const contextValue: TeamContextType = {
     ...state,
     addPlayer,
@@ -395,6 +421,7 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     isPlayerInTeam,
     addMultiplePlayers,
     fillTeamWithBestPlayers,
+    fillTeamWithWorstPlayers,
   };
 
   return (

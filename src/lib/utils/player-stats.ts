@@ -259,6 +259,61 @@ export function findBestPlayersByPosition(
 }
 
 /**
+ * Find the worst available players for each position (for fun challenges!)
+ */
+export function findWorstPlayersByPosition(
+  availablePlayers: Player[],
+  takenPlayerIds: Set<number> = new Set(),
+  requirements: Record<string, number> = { PG: 1, SG: 1, SF: 1, PF: 1, C: 1 }
+): Record<string, Player[]> {
+  const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
+  const result: Record<string, Player[]> = {};
+
+  // Initialize result object with empty arrays for each position
+  positions.forEach(pos => {
+    result[pos] = [];
+  });
+
+  // Filter out taken players
+  const available = availablePlayers.filter(player => !takenPlayerIds.has(player.id));
+
+  // Group players by position
+  const playersByPosition: Record<string, Player[]> = {};
+  positions.forEach(pos => {
+    playersByPosition[pos] = available.filter(player => player.position === pos);
+  });
+
+  // For each position, find the WORST players based on efficiency
+  positions.forEach(position => {
+    const positionPlayers = playersByPosition[position];
+
+    // Sort by efficiency (LOWEST first - reverse of findBestPlayersByPosition)
+    const sortedPlayers = positionPlayers
+      .map(player => ({
+        player,
+        efficiency: calculateYearEfficiency(player),
+        gamesPlayed: player.gamesPlayed || 0,
+      }))
+      .sort((a, b) => {
+        // Primary sort: efficiency (LOWER is "better" for worst team)
+        if (a.efficiency !== b.efficiency) {
+          return a.efficiency - b.efficiency;
+        }
+        // Secondary sort: games played (fewer games for worst)
+        return a.gamesPlayed - b.gamesPlayed;
+      });
+
+    // Take the required number of worst players for this position
+    const requiredCount = requirements[position] || 1;
+    result[position] = sortedPlayers
+      .slice(0, requiredCount)
+      .map(item => item.player);
+  });
+
+  return result;
+}
+
+/**
  * Calculate a comprehensive player rating for position-based selection
  */
 export function calculatePlayerRating(player: Player): number {

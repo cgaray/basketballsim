@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, X, AlertCircle, Users } from 'lucide-react';
 import { Player } from '@/types';
+import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 
 interface QuickPositionSearchProps {
   teamId: 1 | 2;
@@ -28,6 +29,8 @@ export function QuickPositionSearch({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPosition, setSelectedPosition] = useState(initialPosition || '');
   const [players, setPlayers] = useState<Player[]>([]);
+  const [playerGroups, setPlayerGroups] = useState<Record<string, Player[]>>({});
+  const [playerYears, setPlayerYears] = useState<Record<string, { selectedYear: number }>>({});
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
@@ -75,6 +78,14 @@ export function QuickPositionSearch({
           (player: Player) => !currentRosterIds.includes(player.id)
         );
         setPlayers(availablePlayers);
+
+        // Group players by name for deduplication
+        const groups: Record<string, Player[]> = {};
+        availablePlayers.forEach(player => {
+          if (!groups[player.name]) groups[player.name] = [];
+          groups[player.name].push(player);
+        });
+        setPlayerGroups(groups);
       }
     } catch (error) {
       console.error('Error fetching players:', error);
@@ -178,25 +189,69 @@ export function QuickPositionSearch({
             {loading ? (
               <p className="text-center py-4 text-muted-foreground">Searching...</p>
             ) : players.length > 0 ? (
-              players.map(player => (
-                <div
-                  key={player.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <div className="flex-1">
-                    <div className="font-medium">{player.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {player.position} • {player.team} • {player.pointsPerGame?.toFixed(1)} PPG
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleAddPlayer(player)}
+              Object.entries(playerGroups).map(([playerName, playerSeasons]) => {
+                const yearAnalysis = analyzePlayerYears(playerSeasons);
+
+                // Initialize year selection with best year if not already set
+                if (!playerYears[playerName]) {
+                  setPlayerYears(prev => ({
+                    ...prev,
+                    [playerName]: { selectedYear: yearAnalysis.bestYear },
+                  }));
+                }
+
+                const currentYearData = playerYears[playerName];
+                const displayPlayer = currentYearData
+                  ? getPlayerForYear(playerSeasons, currentYearData.selectedYear) || playerSeasons[0]
+                  : playerSeasons[0];
+
+                if (!displayPlayer) return null;
+
+                const hasMultipleSeasons = playerSeasons.length > 1;
+
+                return (
+                  <div
+                    key={`${playerName}-${displayPlayer.season}`}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
                   >
-                    Add to Team {teamId}
-                  </Button>
-                </div>
-              ))
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium">{displayPlayer.name}</div>
+                        {hasMultipleSeasons && (
+                          <div className="flex gap-1">
+                            {yearAnalysis.availableYears.map(year => (
+                              <Button
+                                key={year}
+                                variant={currentYearData?.selectedYear === year ? 'default' : 'outline'}
+                                size="sm"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => {
+                                  setPlayerYears(prev => ({
+                                    ...prev,
+                                    [playerName]: { selectedYear: year },
+                                  }));
+                                }}
+                              >
+                                {year}
+                                {year === yearAnalysis.bestYear && ' ⭐'}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {displayPlayer.position} • {displayPlayer.team} • {displayPlayer.pointsPerGame?.toFixed(1)} PPG
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleAddPlayer(displayPlayer)}
+                    >
+                      Add to Team {teamId}
+                    </Button>
+                  </div>
+                );
+              })
             ) : (
               <div className="text-center py-4">
                 <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />

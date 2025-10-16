@@ -169,14 +169,14 @@ export default function TeamsPage() {
             <div className="bg-blue-500 text-white text-center py-4 rounded-xl shadow-lg">
               <h2 className="text-3xl font-black">⭐ TEAM 1 ⭐</h2>
             </div>
-            <TeamRoster teamId={1} />
+            <TeamRoster teamId={1} availablePlayers={players} />
           </div>
 
           <div className="space-y-4">
             <div className="bg-red-500 text-white text-center py-4 rounded-xl shadow-lg">
               <h2 className="text-3xl font-black">🔥 TEAM 2 🔥</h2>
             </div>
-            <TeamRoster teamId={2} />
+            <TeamRoster teamId={2} availablePlayers={players} />
           </div>
         </div>
       </main>

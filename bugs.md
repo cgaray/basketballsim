@@ -1,0 +1,6 @@
+- I'm seeing two entries for "Bernard King" in the quick entry list -- why might there be duplicate entries? I think we are seeing an entry for every distinct season for a player. Can we handle this more elegantly?
+- When I hit "Save" for a team -- it is getting erased from the team select. I'd like the option to continue editing and then saving again
+- I need an interface to load saved teams and edit them
+- I'd like to keep track of a team's overall record and be able to see simulation stats for the team (including for each individual player) and a simple history of games
+- the "add to team 1" and "add to team 2" buttons don't look like buttons
+- I feel having to quick quick add then scroll down to see duplicate ovals for "SG", "PG", etc. and then to have to click the is too complex
