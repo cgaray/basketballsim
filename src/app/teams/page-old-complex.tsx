@@ -103,7 +103,7 @@ export default function TeamsPage() {
     setPlayerGroups({});
   };
 
-  const handleLoadTeam = (team: any, targetTeam: 1 | 2) => {
+  const handleLoadTeam = (team: { name: string; players: number[] }, targetTeam: 1 | 2) => {
     loadTeam({ name: team.name, players: team.players }, targetTeam);
     setShowSavedTeams(false);
   };

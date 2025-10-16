@@ -106,7 +106,7 @@ async function importPlayers() {
       }
 
       const values = line.split(',');
-      const row: any = {};
+      const row: Record<string, string> = {};
       statsHeaders.forEach((header, i) => {
         row[header] = values[i];
       });

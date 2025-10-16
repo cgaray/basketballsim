@@ -4,8 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/database/prisma';
-import type { APIResponse } from '@/types';
+import type { APIResponse, Player } from '@/types';
 
 interface UpdateTeamRequest {
   name?: string;
@@ -15,7 +16,7 @@ interface UpdateTeamRequest {
 interface TeamWithPlayers {
   id: number;
   name: string;
-  players: any[];
+  players: Player[];
   createdAt: Date;
 }
 
@@ -95,7 +96,7 @@ export async function GET(
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
-): Promise<NextResponse<APIResponse<any>>> {
+): Promise<NextResponse<APIResponse<TeamWithPlayers>>> {
   try {
     const teamId = parseInt(params.id);
     const body: UpdateTeamRequest = await request.json();
@@ -111,7 +112,7 @@ export async function PUT(
       );
     }
 
-    const updateData: any = {};
+    const updateData: Prisma.TeamUpdateInput = {};
 
     if (body.name) {
       updateData.name = body.name;

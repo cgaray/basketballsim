@@ -26,14 +26,14 @@ interface PlayerStats {
 }
 
 // Simple CSV parser
-function parseCSV(filePath: string): any[] {
+function parseCSV(filePath: string): Record<string, string>[] {
   const content = fs.readFileSync(filePath, 'utf-8');
   const lines = content.split('\n').filter(line => line.trim());
   const headers = lines[0].split(',');
 
   return lines.slice(1).map(line => {
     const values = line.split(',');
-    const obj: any = {};
+    const obj: Record<string, string> = {};
     headers.forEach((header, i) => {
       obj[header] = values[i];
     });
@@ -42,7 +42,7 @@ function parseCSV(filePath: string): any[] {
 }
 
 // Determine position from Players.csv flags
-function getPosition(row: any): string {
+function getPosition(row: Record<string, string>): string {
   if (row.guard === 'True') return 'PG'; // Default guards to PG
   if (row.forward === 'True') return 'SF'; // Default forwards to SF
   if (row.center === 'True') return 'C';

@@ -7,11 +7,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MatchSimulator } from '@/components/matches/MatchSimulator';
 import { TeamSelector } from '@/components/matches/TeamSelector';
 import { Navbar } from '@/components/layout/Navbar';
+import type { Player } from '@/types';
 
 interface Team {
   id: number;
   name: string;
-  players: any[]; // Now contains full player objects
+  players: Player[]; // Now contains full player objects
 }
 
 export default function MatchesPage() {

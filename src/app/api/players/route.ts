@@ -4,13 +4,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/database/prisma';
 import type { APIResponse, PlayerSearchResult } from '@/types';
 
 export async function GET(request: NextRequest): Promise<NextResponse<APIResponse<PlayerSearchResult>>> {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     // Parse simplified query parameters
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<APIRespons
     const position = searchParams.get('position') || '';
 
     // Build simplified where clause
-    const where: any = {};
+    const where: Prisma.PlayerWhereInput = {};
 
     if (search) {
       where.name = {

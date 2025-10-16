@@ -3,11 +3,12 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import type { Player } from '@/types';
 
 interface Team {
   id: number;
   name: string;
-  players: any[];
+  players: Player[];
 }
 
 interface TeamSelectorProps {
