@@ -8,29 +8,22 @@ import { PlayerCard } from '../PlayerCard';
 import { Player } from '@/types';
 
 // Mock the format utilities
-const mockFormatDecimal = jest.fn((value) => value?.toFixed(1) || 'N/A');
-const mockFormatPercentage = jest.fn((value) => value ? `${(value * 100).toFixed(1)}%` : 'N/A');
-const mockFormatPlayerName = jest.fn((name) => name?.trim() || '');
-const mockFormatTeamName = jest.fn((team) => team || 'Free Agent');
-const mockGetPositionAbbreviation = jest.fn((position) => {
-  const map: Record<string, string> = {
-    'Point Guard': 'PG',
-    'Shooting Guard': 'SG',
-    'Small Forward': 'SF',
-    'Power Forward': 'PF',
-    'Center': 'C',
-  };
-  return map[position] || position;
-});
-const mockCalculatePlayerEfficiency = jest.fn(() => 15.5);
-
 jest.mock('@/lib/utils/format', () => ({
-  formatDecimal: mockFormatDecimal,
-  formatPercentage: mockFormatPercentage,
-  formatPlayerName: mockFormatPlayerName,
-  formatTeamName: mockFormatTeamName,
-  getPositionAbbreviation: mockGetPositionAbbreviation,
-  calculatePlayerEfficiency: mockCalculatePlayerEfficiency,
+  formatDecimal: jest.fn((value) => value?.toFixed(1) || 'N/A'),
+  formatPercentage: jest.fn((value) => value ? `${(value * 100).toFixed(1)}%` : 'N/A'),
+  formatPlayerName: jest.fn((name) => name?.trim() || ''),
+  formatTeamName: jest.fn((team) => team || 'Free Agent'),
+  getPositionAbbreviation: jest.fn((position) => {
+    const map: Record<string, string> = {
+      'Point Guard': 'PG',
+      'Shooting Guard': 'SG',
+      'Small Forward': 'SF',
+      'Power Forward': 'PF',
+      'Center': 'C',
+    };
+    return map[position] || position;
+  }),
+  calculatePlayerEfficiency: jest.fn(() => 15.5),
 }));
 
 const mockPlayer: Player = {
@@ -84,51 +77,61 @@ describe('PlayerCard', () => {
 
 
   it('applies selected styling when isSelected is true', () => {
-    render(<PlayerCard {...defaultProps} isSelected={true} />);
+    render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={1} />);
 
-    const card = screen.getByRole('button');
-    expect(card).toHaveClass('ring-2', 'ring-primary');
+    const card = screen.getByText('LeBron James').closest('div')?.parentElement?.parentElement;
+    expect(card).toHaveClass('ring-2', 'ring-blue-500');
   });
 
-  it('calls onSelect when clicked and not selected', () => {
-    const onSelect = jest.fn();
-    render(<PlayerCard {...defaultProps} onSelect={onSelect} />);
+  it('calls onSelectTeam when Team 1 button clicked', () => {
+    const onSelectTeam = jest.fn();
+    render(<PlayerCard {...defaultProps} onSelectTeam={onSelectTeam} />);
 
-    fireEvent.click(screen.getByRole('button'));
-    expect(onSelect).toHaveBeenCalledWith(mockPlayer);
+    fireEvent.click(screen.getByText('Team 1'));
+    expect(onSelectTeam).toHaveBeenCalledWith(mockPlayer, 1);
   });
 
-  it('calls onDeselect when clicked and selected', () => {
+  it('calls onSelectTeam when Team 2 button clicked', () => {
+    const onSelectTeam = jest.fn();
+    render(<PlayerCard {...defaultProps} onSelectTeam={onSelectTeam} />);
+
+    fireEvent.click(screen.getByText('Team 2'));
+    expect(onSelectTeam).toHaveBeenCalledWith(mockPlayer, 2);
+  });
+
+  it('calls onDeselect when remove button clicked', () => {
     const onDeselect = jest.fn();
     render(
-      <PlayerCard 
-        {...defaultProps} 
-        isSelected={true} 
-        onDeselect={onDeselect} 
+      <PlayerCard
+        {...defaultProps}
+        isSelected={true}
+        selectedTeam={1}
+        onDeselect={onDeselect}
       />
     );
 
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByText(/Remove from Team/));
     expect(onDeselect).toHaveBeenCalledWith(mockPlayer);
   });
 
-  it('shows "Add to Team" button when not selected', () => {
+  it('shows "Team 1" and "Team 2" buttons when not selected', () => {
     render(<PlayerCard {...defaultProps} />);
 
-    expect(screen.getByText('Add to Team')).toBeInTheDocument();
+    expect(screen.getByText('Team 1')).toBeInTheDocument();
+    expect(screen.getByText('Team 2')).toBeInTheDocument();
   });
 
-  it('shows "Remove" button when selected', () => {
-    render(<PlayerCard {...defaultProps} isSelected={true} />);
+  it('shows "Remove from Team" button when selected', () => {
+    render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={1} />);
 
-    expect(screen.getByText('Remove')).toBeInTheDocument();
+    expect(screen.getByText(/Remove from Team/)).toBeInTheDocument();
   });
 
   it('does not show action buttons when showActions is false', () => {
     render(<PlayerCard {...defaultProps} showActions={false} />);
 
-    expect(screen.queryByText('Add to Team')).not.toBeInTheDocument();
-    expect(screen.queryByText('Remove')).not.toBeInTheDocument();
+    expect(screen.queryByText('Team 1')).not.toBeInTheDocument();
+    expect(screen.queryByText('Team 2')).not.toBeInTheDocument();
   });
 
   it('handles player without team', () => {
@@ -136,6 +139,18 @@ describe('PlayerCard', () => {
     render(<PlayerCard {...defaultProps} player={playerWithoutTeam} />);
 
     expect(screen.getByText('Free Agent')).toBeInTheDocument();
+  });
+
+  it('displays correct team badge when selected for team 1', () => {
+    render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={1} />);
+
+    expect(screen.getByText('Team 1')).toBeInTheDocument();
+  });
+
+  it('displays correct team badge when selected for team 2', () => {
+    render(<PlayerCard {...defaultProps} isSelected={true} selectedTeam={2} />);
+
+    expect(screen.getByText('Team 2')).toBeInTheDocument();
   });
 
 });

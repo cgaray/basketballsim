@@ -25,14 +25,12 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
   const [matchResult, setMatchResult] = useState<MatchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentQuarter, setCurrentQuarter] = useState(0);
   const [showPlayByPlay, setShowPlayByPlay] = useState(false);
 
   const simulateMatch = async () => {
     setLoading(true);
     setError(null);
     setMatchResult(null);
-    setCurrentQuarter(0);
 
     try {
       const [team1Players, team2Players] = await Promise.all([
@@ -53,7 +51,7 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
       };
 
       const engine = new SimulationEngine(simulationTeam1, simulationTeam2);
-      const result = await simulateWithAnimation(engine);
+      const result = engine.simulateMatch();
 
       setMatchResult(result);
 
@@ -63,25 +61,6 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const simulateWithAnimation = async (engine: SimulationEngine): Promise<MatchResult> => {
-    return new Promise((resolve) => {
-      const result = engine.simulateMatch();
-
-      let quarterIndex = 0;
-      const animateQuarters = () => {
-        if (quarterIndex < result.quarters.length) {
-          setCurrentQuarter(quarterIndex + 1);
-          quarterIndex++;
-          setTimeout(animateQuarters, 1000);
-        } else {
-          resolve(result);
-        }
-      };
-
-      setTimeout(animateQuarters, 500);
-    });
   };
 
   const fetchPlayersForTeam = async (team: Team): Promise<SimulationPlayer[]> => {
@@ -135,25 +114,15 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card>
+        <Card className="border-4 border-orange-500">
           <CardContent className="flex flex-col items-center justify-center min-h-[400px]">
-            <div className="text-center space-y-4">
-              <h2 className="text-2xl font-bold">Simulating Match...</h2>
-              {currentQuarter > 0 && (
-                <p className="text-lg text-gray-600">
-                  {getQuarterLabel(currentQuarter)} in progress
-                </p>
-              )}
-              <div className="flex space-x-2 justify-center">
-                {[1, 2, 3, 4].map(q => (
-                  <div
-                    key={q}
-                    className={`w-3 h-3 rounded-full ${
-                      q <= currentQuarter ? 'bg-blue-600' : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
+            <div className="text-center space-y-6">
+              <div className="text-8xl animate-bounce">🏀</div>
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+                The Game is Starting!
+              </h2>
+              <p className="text-2xl text-gray-600">Players are warming up...</p>
+              <div className="animate-pulse text-6xl">⚡</div>
             </div>
           </CardContent>
         </Card>
@@ -179,28 +148,41 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex justify-between items-center">
-        <Button variant="outline" onClick={onBack}>
-          Back to Team Selection
+        <Button
+          variant="outline"
+          onClick={onBack}
+          className="text-xl px-6 py-4 h-auto"
+        >
+          ⬅️ Pick Different Teams
         </Button>
-        <Button onClick={simulateMatch}>
-          Simulate Again
+        <Button
+          onClick={simulateMatch}
+          className="text-xl px-8 py-4 h-auto bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+        >
+          🔄 Battle Again!
         </Button>
       </div>
 
-      <Card className="mb-6">
+      <Card className="mb-6 border-4 border-orange-500 bg-gradient-to-r from-orange-50 to-red-50">
         <CardHeader>
-          <CardTitle className="text-center text-3xl">Final Score</CardTitle>
+          <CardTitle className="text-center text-5xl font-bold">
+            🏆 GAME OVER! 🏆
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex justify-center items-center space-x-8">
-            <div className={`text-center ${matchResult.winner === 'team1' ? 'text-green-600' : ''}`}>
-              <h3 className="text-xl font-semibold">{matchResult.team1.name}</h3>
-              <p className="text-5xl font-bold mt-2">{matchResult.team1Score}</p>
+            <div className={`text-center p-6 rounded-lg ${matchResult.winner === 'team1' ? 'bg-green-100 border-4 border-green-500' : 'bg-gray-100'}`}>
+              {matchResult.winner === 'team1' && <div className="text-6xl mb-2">👑</div>}
+              <h3 className="text-2xl font-bold mb-2">{matchResult.team1.name}</h3>
+              <p className="text-7xl font-bold">{matchResult.team1Score}</p>
+              {matchResult.winner === 'team1' && <p className="text-2xl font-bold text-green-600 mt-2">WINNER!</p>}
             </div>
-            <div className="text-2xl text-gray-400">vs</div>
-            <div className={`text-center ${matchResult.winner === 'team2' ? 'text-green-600' : ''}`}>
-              <h3 className="text-xl font-semibold">{matchResult.team2.name}</h3>
-              <p className="text-5xl font-bold mt-2">{matchResult.team2Score}</p>
+            <div className="text-4xl font-bold text-gray-400">VS</div>
+            <div className={`text-center p-6 rounded-lg ${matchResult.winner === 'team2' ? 'bg-green-100 border-4 border-green-500' : 'bg-gray-100'}`}>
+              {matchResult.winner === 'team2' && <div className="text-6xl mb-2">👑</div>}
+              <h3 className="text-2xl font-bold mb-2">{matchResult.team2.name}</h3>
+              <p className="text-7xl font-bold">{matchResult.team2Score}</p>
+              {matchResult.winner === 'team2' && <p className="text-2xl font-bold text-green-600 mt-2">WINNER!</p>}
             </div>
           </div>
         </CardContent>
@@ -249,26 +231,29 @@ export function MatchSimulator({ team1, team2, onBack }: MatchSimulatorProps) {
         </CardContent>
       </Card>
 
-      <Card className="mb-6">
+      <Card className="mb-6 border-4 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50">
         <CardHeader>
-          <CardTitle>MVP</CardTitle>
+          <CardTitle className="text-4xl font-bold text-center">
+            ⭐ GAME MVP ⭐
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="text-center space-y-4">
+            <div className="text-6xl">🏅</div>
             <div>
-              <p className="text-xl font-semibold">{matchResult.mvp.player}</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-3xl font-bold">{matchResult.mvp.player}</p>
+              <p className="text-xl text-gray-600">
                 {matchResult.mvp.team === 'team1' ? matchResult.team1.name : matchResult.team2.name}
               </p>
             </div>
-            <div className="flex space-x-4">
-              <Badge variant="outline">
+            <div className="flex justify-center space-x-6 pt-4">
+              <Badge className="text-2xl px-6 py-3 bg-orange-500">
                 {matchResult.mvp.points} PTS
               </Badge>
-              <Badge variant="outline">
+              <Badge className="text-2xl px-6 py-3 bg-blue-500">
                 {matchResult.mvp.rebounds} REB
               </Badge>
-              <Badge variant="outline">
+              <Badge className="text-2xl px-6 py-3 bg-green-500">
                 {matchResult.mvp.assists} AST
               </Badge>
             </div>

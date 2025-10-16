@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Users, Save, Trash2, Trophy, Search, Plus } from 'lucide-react';
+import { AlertCircle, Users, Save, Trash2, Trophy, Search, Plus, CheckCircle } from 'lucide-react';
 import { useTeam } from '@/contexts/TeamContext';
 import { Player } from '@/types';
 import { QuickPositionSearch } from '@/components/players/QuickPositionSearch';
@@ -24,6 +24,7 @@ interface PositionGroupProps {
 
 interface TeamRosterProps {
   teamId: 1 | 2;
+  availablePlayers?: Player[];
 }
 
 function PositionGroup({ position, players, onRemove, onQuickAdd }: PositionGroupProps) {
@@ -66,7 +67,7 @@ function PositionGroup({ position, players, onRemove, onQuickAdd }: PositionGrou
               <div className="flex-1">
                 <div className="font-medium text-sm">{player.name}</div>
                 <div className="text-xs text-muted-foreground">
-                  {player.team} • {player.pointsPerGame} PPG
+                  {player.team} • {player.pointsPerGame.toFixed(1)} PPG
                 </div>
               </div>
               <Button
@@ -85,7 +86,7 @@ function PositionGroup({ position, players, onRemove, onQuickAdd }: PositionGrou
   );
 }
 
-export function TeamRoster({ teamId }: TeamRosterProps) {
+export function TeamRoster({ teamId, availablePlayers = [] }: TeamRosterProps) {
   const {
     team1,
     team2,
@@ -98,6 +99,9 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
     isValidRoster,
     isLoading,
     error,
+    successMessage,
+    fillTeamWithBestPlayers,
+    fillTeamWithWorstPlayers,
   } = useTeam();
 
   const [showQuickSearch, setShowQuickSearch] = useState(false);
@@ -131,21 +135,30 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="space-y-2">
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
             Current Roster ({roster.length}/15)
             {isComplete && <Trophy className="w-5 h-5 text-yellow-500" />}
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleQuickAdd('')}
-            className="h-8"
-          >
-            <Search className="w-4 h-4 mr-2" />
-            Quick Add
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {(['PG', 'SG', 'SF', 'PF', 'C'] as const).map(position => {
+              const count = positionCounts[position];
+              const isMissing = count === 0;
+              return (
+                <Button
+                  key={position}
+                  variant={isMissing ? "destructive" : "outline"}
+                  size="sm"
+                  onClick={() => handleQuickAdd(position)}
+                  className={isMissing ? "animate-pulse" : ""}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  {position} ({count})
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -198,6 +211,15 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
           </div>
         )}
 
+        {successMessage && (
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2 text-green-700 text-sm">
+              <CheckCircle className="w-4 h-4" />
+              {successMessage}
+            </div>
+          </div>
+        )}
+
         {/* Quick Search Component */}
         {showQuickSearch && (
           <div className="mb-4">
@@ -229,6 +251,31 @@ export function TeamRoster({ teamId }: TeamRosterProps) {
             <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
             <p>No players added yet</p>
             <p className="text-sm">Start building your team by browsing players</p>
+          </div>
+        )}
+
+        {/* Quick Fill Buttons */}
+        {availablePlayers.length > 0 && (
+          <div className="border-t pt-4">
+            <p className="text-sm text-muted-foreground mb-2">Quick Fill:</p>
+            <div className="flex gap-2">
+              <Button
+                variant="default"
+                onClick={() => fillTeamWithBestPlayers(availablePlayers, teamId)}
+                disabled={isLoading}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold"
+              >
+                ⭐ Fill with Best
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => fillTeamWithWorstPlayers(availablePlayers, teamId)}
+                disabled={isLoading}
+                className="flex-1 border-orange-500 text-orange-700 hover:bg-orange-50"
+              >
+                💀 Fill with Worst
+              </Button>
+            </div>
           </div>
         )}
 

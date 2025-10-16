@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import type { Player } from '@/types';
-import { findBestPlayersByPosition } from '@/lib/utils/player-stats';
+import { findBestPlayersByPosition, findWorstPlayersByPosition } from '@/lib/utils/player-stats';
 
 interface SingleTeamState {
   roster: Player[];
@@ -19,10 +19,22 @@ interface TeamState {
   team2: SingleTeamState;
   isLoading: boolean;
   error: string | null;
+  successMessage: string | null;
 }
 
 interface TeamAction {
-  type: 'ADD_PLAYER' | 'REMOVE_PLAYER' | 'SET_TEAM_NAME' | 'CLEAR_ROSTER' | 'SET_LOADING' | 'SET_ERROR' | 'LOAD_TEAM' | 'CLEAR_ALL' | 'ADD_MULTIPLE_PLAYERS';
+  type:
+    | 'ADD_PLAYER'
+    | 'REMOVE_PLAYER'
+    | 'SET_TEAM_NAME'
+    | 'CLEAR_ROSTER'
+    | 'CLEAR_ROSTER_KEEP_NAME'
+    | 'SET_LOADING'
+    | 'SET_ERROR'
+    | 'SET_SUCCESS'
+    | 'LOAD_TEAM'
+    | 'CLEAR_ALL'
+    | 'ADD_MULTIPLE_PLAYERS';
   payload?: Player | string | boolean | number | { players: Player[]; name: string } | Player[];
   teamId?: 1 | 2;
 }
@@ -40,6 +52,7 @@ interface TeamContextType extends TeamState {
   isPlayerInTeam: (playerId: number) => 1 | 2 | null;
   addMultiplePlayers: (players: Player[], teamId: 1 | 2) => void;
   fillTeamWithBestPlayers: (availablePlayers: Player[], teamId: 1 | 2, requirements?: Record<string, number>) => void;
+  fillTeamWithWorstPlayers: (availablePlayers: Player[], teamId: 1 | 2, requirements?: Record<string, number>) => void;
 }
 
 const initialState: TeamState = {
@@ -53,6 +66,7 @@ const initialState: TeamState = {
   },
   isLoading: false,
   error: null,
+  successMessage: null,
 };
 
 function teamReducer(state: TeamState, action: TeamAction): TeamState {
@@ -84,6 +98,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: updatedTeam,
         error: null,
+        successMessage: null,
       };
 
     case 'REMOVE_PLAYER':
@@ -96,6 +111,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: filteredTeam,
         error: null,
+        successMessage: null,
       };
 
     case 'SET_TEAM_NAME':
@@ -107,6 +123,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
       return {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: namedTeam,
+        successMessage: null,
       };
 
     case 'CLEAR_ROSTER':
@@ -118,6 +135,19 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
       return {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: clearedTeam,
+        error: null,
+        successMessage: null,
+      };
+
+    case 'CLEAR_ROSTER_KEEP_NAME':
+      const clearedRosterKeepName = {
+        ...currentTeam,
+        roster: [],
+      };
+
+      return {
+        ...state,
+        [teamId === 1 ? 'team1' : 'team2']: clearedRosterKeepName,
         error: null,
       };
 
@@ -132,6 +162,15 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         error: action.payload,
         isLoading: false,
+        successMessage: null,
+      };
+
+    case 'SET_SUCCESS':
+      return {
+        ...state,
+        successMessage: action.payload,
+        error: null,
+        isLoading: false,
       };
 
     case 'LOAD_TEAM':
@@ -144,6 +183,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: loadedTeam,
         error: null,
+        successMessage: null,
         isLoading: false,
       };
 
@@ -153,6 +193,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         team1: { roster: [], teamName: '' },
         team2: { roster: [], teamName: '' },
         error: null,
+        successMessage: null,
       };
 
     case 'ADD_MULTIPLE_PLAYERS':
@@ -181,6 +222,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: updatedTeamWithMultiple,
         error: null,
+        successMessage: null,
       };
 
     default:
@@ -247,7 +289,9 @@ export function TeamProvider({ children }: { children: ReactNode }) {
       }
 
       dispatch({ type: 'SET_LOADING', payload: false });
-      dispatch({ type: 'CLEAR_ROSTER', teamId });
+      dispatch({ type: 'SET_SUCCESS', payload: `Team "${team.teamName}" saved! Keep editing or save again.` });
+      // Don't clear roster - allow continued editing
+      // dispatch({ type: 'CLEAR_ROSTER_KEEP_NAME', teamId });
 
     } catch (error) {
       dispatch({
@@ -339,6 +383,30 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const fillTeamWithWorstPlayers = (availablePlayers: Player[], teamId: 1 | 2, requirements: Record<string, number> = { PG: 1, SG: 1, SF: 1, PF: 1, C: 1 }) => {
+    try {
+      // Get all players currently in both teams
+      const allCurrentPlayers = [...state.team1.roster, ...state.team2.roster];
+      const takenPlayerIds = new Set(allCurrentPlayers.map(p => p.id));
+
+      const worstPlayersByPosition = findWorstPlayersByPosition(
+        availablePlayers,
+        takenPlayerIds,
+        requirements
+      );
+
+      // Flatten all selected players
+      const selectedPlayers = Object.values(worstPlayersByPosition).flat();
+
+      if (selectedPlayers.length > 0) {
+        addMultiplePlayers(selectedPlayers, teamId);
+      }
+    } catch (error) {
+      console.error('Error filling team with worst players:', error);
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to fill team with worst players' });
+    }
+  };
+
   const contextValue: TeamContextType = {
     ...state,
     addPlayer,
@@ -353,6 +421,7 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     isPlayerInTeam,
     addMultiplePlayers,
     fillTeamWithBestPlayers,
+    fillTeamWithWorstPlayers,
   };
 
   return (

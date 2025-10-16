@@ -142,27 +142,27 @@ export function PlayerCard({
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-blue-300 hover:bg-blue-50 text-blue-700"
+                  variant="default"
+                  size="default"
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleTeamSelect(1);
                   }}
                 >
-                  <Plus className="w-4 h-4 mr-1" />
+                  <Plus className="w-5 h-5 mr-1" />
                   Team 1
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-green-300 hover:bg-green-50 text-green-700"
+                  variant="default"
+                  size="default"
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleTeamSelect(2);
                   }}
                 >
-                  <Plus className="w-4 h-4 mr-1" />
+                  <Plus className="w-5 h-5 mr-1" />
                   Team 2
                 </Button>
               </div>

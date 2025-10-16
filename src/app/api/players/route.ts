@@ -28,9 +28,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<APIRespons
     }
 
     if (position) {
-      where.position = {
-        contains: position,
-      };
+      where.position = position; // Exact match for position
     }
 
     // Simple ordering by points per game
