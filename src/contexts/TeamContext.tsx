@@ -20,6 +20,8 @@ interface TeamState {
   isLoading: boolean;
   error: string | null;
   successMessage: string | null;
+  playerPool: Player[];
+  isPoolLoading: boolean;
 }
 
 interface TeamAction {
@@ -34,7 +36,9 @@ interface TeamAction {
     | 'SET_SUCCESS'
     | 'LOAD_TEAM'
     | 'CLEAR_ALL'
-    | 'ADD_MULTIPLE_PLAYERS';
+    | 'ADD_MULTIPLE_PLAYERS'
+    | 'SET_PLAYER_POOL'
+    | 'SET_POOL_LOADING';
   payload?: Player | string | boolean | number | { players: Player[]; name: string } | Player[];
   teamId?: 1 | 2;
 }
@@ -53,6 +57,8 @@ interface TeamContextType extends TeamState {
   addMultiplePlayers: (players: Player[], teamId: 1 | 2) => void;
   fillTeamWithBestPlayers: (availablePlayers: Player[], teamId: 1 | 2, requirements?: Record<string, number>) => void;
   fillTeamWithWorstPlayers: (availablePlayers: Player[], teamId: 1 | 2, requirements?: Record<string, number>) => void;
+  ensurePlayerPool: () => Promise<void>;
+  clearSuccessMessage: () => void;
 }
 
 const initialState: TeamState = {
@@ -67,6 +73,8 @@ const initialState: TeamState = {
   isLoading: false,
   error: null,
   successMessage: null,
+  playerPool: [],
+  isPoolLoading: false,
 };
 
 function teamReducer(state: TeamState, action: TeamAction): TeamState {
@@ -223,6 +231,19 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         [teamId === 1 ? 'team1' : 'team2']: updatedTeamWithMultiple,
         error: null,
         successMessage: null,
+      };
+
+    case 'SET_PLAYER_POOL':
+      return {
+        ...state,
+        playerPool: action.payload as Player[],
+        isPoolLoading: false,
+      };
+
+    case 'SET_POOL_LOADING':
+      return {
+        ...state,
+        isPoolLoading: action.payload as boolean,
       };
 
     default:
@@ -407,6 +428,33 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const ensurePlayerPool = async () => {
+    if (state.playerPool.length > 0 || state.isPoolLoading) {
+      return; // Already have pool or loading
+    }
+
+    dispatch({ type: 'SET_POOL_LOADING', payload: true });
+
+    try {
+      const response = await fetch('/api/players?limit=1000'); // Large pool
+      const result = await response.json();
+
+      if (result.success) {
+        dispatch({ type: 'SET_PLAYER_POOL', payload: result.data.players });
+      } else {
+        throw new Error(result.error || 'Failed to fetch player pool');
+      }
+    } catch (error) {
+      console.error('Error fetching player pool:', error);
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to load player pool' });
+      dispatch({ type: 'SET_POOL_LOADING', payload: false });
+    }
+  };
+
+  const clearSuccessMessage = () => {
+    dispatch({ type: 'SET_SUCCESS', payload: null });
+  };
+
   const contextValue: TeamContextType = {
     ...state,
     addPlayer,
@@ -422,6 +470,8 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     addMultiplePlayers,
     fillTeamWithBestPlayers,
     fillTeamWithWorstPlayers,
+    ensurePlayerPool,
+    clearSuccessMessage,
   };
 
   return (

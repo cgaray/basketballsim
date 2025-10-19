@@ -85,6 +85,26 @@ export default function PlayersPage() {
     return () => clearTimeout(timeoutId);
   }, [searchTerm, selectedPosition]);
 
+  // Initialize player years when playerGroups changes
+  useEffect(() => {
+    const newPlayerYears: Record<string, { availableYears: number[]; bestYear: number; selectedYear: number }> = {};
+    
+    Object.entries(playerGroups).forEach(([playerName, playerSeasons]) => {
+      if (!playerYears[playerName]) {
+        const yearAnalysis = analyzePlayerYears(playerSeasons);
+        newPlayerYears[playerName] = {
+          availableYears: yearAnalysis.availableYears,
+          bestYear: yearAnalysis.bestYear,
+          selectedYear: yearAnalysis.availableYears[0] || playerSeasons[0]?.season || 2023,
+        };
+      }
+    });
+
+    if (Object.keys(newPlayerYears).length > 0) {
+      setPlayerYears(prev => ({ ...prev, ...newPlayerYears }));
+    }
+  }, [playerGroups, playerYears]);
+
   const handleSearch = () => {
     setPagination(prev => ({ ...prev, page: 1 }));
     fetchPlayers(searchTerm, selectedPosition, 1);
@@ -191,20 +211,6 @@ export default function PlayersPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {Object.entries(playerGroups).map(([playerName, playerSeasons]) => {
-                const yearAnalysis = analyzePlayerYears(playerSeasons);
-                
-                // Initialize player years data if not exists
-                if (!playerYears[playerName]) {
-                  setPlayerYears(prev => ({
-                    ...prev,
-                    [playerName]: {
-                      availableYears: yearAnalysis.availableYears,
-                      bestYear: yearAnalysis.bestYear,
-                      selectedYear: yearAnalysis.availableYears[0] || playerSeasons[0]?.season || 2023,
-                    },
-                  }));
-                }
-
                 const currentYearData = playerYears[playerName];
                 const displayPlayer = currentYearData 
                   ? getPlayerForYear(playerSeasons, currentYearData.selectedYear) || playerSeasons[0]
@@ -223,6 +229,9 @@ export default function PlayersPage() {
                     selectedTeam={playerTeam}
                     onSelectTeam={handlePlayerSelect}
                     onDeselect={handlePlayerDeselect}
+                    seasonOptions={currentYearData?.availableYears || []}
+                    selectedSeason={currentYearData?.selectedYear}
+                    onSeasonChange={(year) => handleYearChange(playerName, year)}
                   />
                 );
               })}

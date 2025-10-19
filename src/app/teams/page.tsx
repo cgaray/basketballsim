@@ -23,7 +23,7 @@ export default function TeamsPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [playerGroups, setPlayerGroups] = useState<Record<string, Player[]>>({});
-  const [playerYears, setPlayerYears] = useState<Record<string, { selectedYear: number }>>({});
+  const [playerYears, setPlayerYears] = useState<Record<string, { availableYears: number[]; bestYear: number; selectedYear: number }>>({});
 
   const fetchPlayers = async (searchTerm: string = '') => {
     try {
@@ -94,6 +94,26 @@ export default function TeamsPage() {
     fetchPlayers();
   }, []);
 
+  // Initialize player years when playerGroups changes
+  useEffect(() => {
+    const newPlayerYears: Record<string, { availableYears: number[]; bestYear: number; selectedYear: number }> = {};
+    
+    Object.entries(playerGroups).forEach(([playerName, playerSeasons]) => {
+      if (!playerYears[playerName]) {
+        const yearAnalysis = analyzePlayerYears(playerSeasons);
+        newPlayerYears[playerName] = {
+          availableYears: yearAnalysis.availableYears,
+          bestYear: yearAnalysis.bestYear,
+          selectedYear: yearAnalysis.availableYears[0] || playerSeasons[0]?.season || 2023,
+        };
+      }
+    });
+
+    if (Object.keys(newPlayerYears).length > 0) {
+      setPlayerYears(prev => ({ ...prev, ...newPlayerYears }));
+    }
+  }, [playerGroups, playerYears]);
+
   const getPlayerTeamStatus = (playerId: number) => isPlayerInTeam(playerId);
 
   return (
@@ -135,15 +155,6 @@ export default function TeamsPage() {
         {!loading && players.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Object.entries(playerGroups).map(([playerName, playerSeasons]) => {
-              const yearAnalysis = analyzePlayerYears(playerSeasons);
-
-              if (!playerYears[playerName]) {
-                setPlayerYears(prev => ({
-                  ...prev,
-                  [playerName]: { selectedYear: yearAnalysis.bestYear },
-                }));
-              }
-
               const currentYearData = playerYears[playerName];
               const displayPlayer = currentYearData
                 ? getPlayerForYear(playerSeasons, currentYearData.selectedYear) || playerSeasons[0]
@@ -164,6 +175,17 @@ export default function TeamsPage() {
                   onDeselect={(player) => {
                     const team = isPlayerInTeam(player.id);
                     if (team) removePlayer(player.id, team);
+                  }}
+                  seasonOptions={currentYearData?.availableYears || []}
+                  selectedSeason={currentYearData?.selectedYear}
+                  onSeasonChange={(year) => {
+                    setPlayerYears(prev => ({
+                      ...prev,
+                      [playerName]: {
+                        ...prev[playerName],
+                        selectedYear: year,
+                      },
+                    }));
                   }}
                 />
               );

@@ -29,8 +29,11 @@ interface PlayerStats {
   totalFTMade: number;
 }
 
-async function importPlayers() {
+async function importPlayers(limit?: number) {
   console.log('🏀 Starting NBA data import (streaming mode)...\n');
+  if (limit) {
+    console.log(`📊 Limiting import to ${limit} player-seasons\n`);
+  }
 
   const dataPath = path.join(process.cwd(), 'data');
 
@@ -176,6 +179,9 @@ async function importPlayers() {
       // Only import players with at least 10 games
       if (stats.gamesPlayed < 10) continue;
 
+      // Apply limit if specified
+      if (limit && imported >= limit) break;
+
       const games = stats.gamesPlayed;
 
       batch.push({
@@ -208,6 +214,47 @@ async function importPlayers() {
       await prisma.player.createMany({ data: batch });
       imported += batch.length;
     }
+
+    // Add custom players: Max Garay (great stats) and Holly Hughes (bad stats)
+    console.log('\n🏆 Adding custom players...');
+    
+    const customPlayers = [
+      // Max Garay - GREAT stats
+      {
+        name: 'Max Garay',
+        position: 'PG',
+        team: 'Custom Team',
+        season: 2025,
+        gamesPlayed: 82,
+        pointsPerGame: 35.0,
+        reboundsPerGame: 8.5,
+        assistsPerGame: 12.0,
+        stealsPerGame: 2.5,
+        blocksPerGame: 1.2,
+        fieldGoalPercentage: 0.65,
+        threePointPercentage: 0.48,
+        freeThrowPercentage: 0.95,
+      },
+      // Holly Hughes - BAD stats
+      {
+        name: 'Holly Hughes',
+        position: 'C',
+        team: 'Custom Team',
+        season: 2025,
+        gamesPlayed: 82,
+        pointsPerGame: 2.1,
+        reboundsPerGame: 1.8,
+        assistsPerGame: 0.5,
+        stealsPerGame: 0.2,
+        blocksPerGame: 0.1,
+        fieldGoalPercentage: 0.28,
+        threePointPercentage: 0.15,
+        freeThrowPercentage: 0.45,
+      }
+    ];
+
+    await prisma.player.createMany({ data: customPlayers });
+    imported += customPlayers.length;
 
     console.log(`\n\n✅ Successfully imported ${imported} player-seasons!\n`);
 
@@ -244,4 +291,13 @@ async function importPlayers() {
   }
 }
 
-importPlayers();
+// Parse command line arguments
+const args = process.argv.slice(2);
+const limit = args[0] ? parseInt(args[0]) : undefined;
+
+if (limit && (isNaN(limit) || limit <= 0)) {
+  console.error('❌ Invalid limit. Please provide a positive number.');
+  process.exit(1);
+}
+
+importPlayers(limit);

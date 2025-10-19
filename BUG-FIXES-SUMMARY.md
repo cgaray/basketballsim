@@ -149,14 +149,51 @@ Quick Fill:
 
 ---
 
-### 6. **Team Management Interface** (Planned)
-**Status**: Pending
-**Estimated Time**: 2 hours
+### 6. **Team Management Interface** ✅
+**Problem**: No way to load or delete saved teams after saving them
+**Solution**: Created dedicated team management page at `/teams/manage`
 
-**Plan**:
-- Create `/teams/manage` page
-- List saved teams with Load/Edit/Delete actions
-- Add "Manage Teams" link to Navbar
+**Files Changed**:
+- `src/app/teams/manage/page.tsx` (NEW, 265 lines)
+- `src/components/layout/Navbar.tsx`
+
+**Changes**:
+
+1. **Created Team Management Page** ([src/app/teams/manage/page.tsx](src/app/teams/manage/page.tsx)):
+   - Fetches all saved teams from `/api/teams` GET endpoint
+   - Displays teams in responsive grid (1/2/3 columns based on screen size)
+   - Shows comprehensive team info: name, player count, positions, creation date
+   - "Load to Team 1" and "Load to Team 2" buttons
+   - "Delete Team" button with browser confirmation dialog
+   - Empty state with "Build Your First Team" call-to-action
+   - Loading state with basketball emoji animation
+   - Error state with retry button
+
+2. **Updated Navbar** ([src/components/layout/Navbar.tsx](src/components/layout/Navbar.tsx)):
+   - Added Folder icon import (line 11)
+   - Added "My Teams" navigation link (lines 78-84)
+   - Highlights when on `/teams/manage` route
+
+**Features**:
+- **Team Cards**: Each card displays:
+  - Team name with player count badge
+  - Creation date with calendar icon
+  - Position breakdown (PG, SG, SF, PF, C counts)
+  - Scrollable player list with positions
+  - Action buttons (Load to Team 1/2, Delete)
+- **Load Functionality**: Uses existing `loadTeam()` from TeamContext, redirects to `/teams`
+- **Delete with Confirmation**: Browser-native confirm dialog prevents accidents
+- **Position Validation**: Red badges for missing positions (count=0)
+- **Stats Summary**: Footer shows total teams and total players
+- **Responsive**: Works on mobile, tablet, desktop
+
+**User Flow**:
+1. Click "My Teams" in navbar → go to `/teams/manage`
+2. See all saved teams in grid layout
+3. Click "Team 1" or "Team 2" button → team loads into builder, redirects to `/teams`
+4. OR click "Delete Team" → confirmation prompt → team deleted from database
+
+**Result**: Full team management system! Users can view, load, and delete their saved teams.
 
 ---
 
@@ -174,7 +211,7 @@ Quick Fill:
 
 ## Files Modified Summary
 
-### Modified (6 files):
+### Modified (7 files) + 1 NEW:
 1. ✅ `src/contexts/TeamContext.tsx`
    - Removed roster clear after save
    - Added `findWorstPlayersByPosition` import
@@ -201,6 +238,15 @@ Quick Fill:
    - Added player name grouping with deduplication
    - Added year selector for multi-season players
    - Shows best year by default with star indicator
+
+7. ✅ `src/components/layout/Navbar.tsx`
+   - Added "My Teams" navigation link with Folder icon
+   - Active state highlighting for `/teams/manage`
+
+8. ✅ `src/app/teams/manage/page.tsx` (NEW FILE)
+   - Full team management interface
+   - Load, view, and delete saved teams
+   - 265 lines of kid-friendly UI
 
 ---
 
@@ -243,6 +289,17 @@ Quick Fill:
 - [ ] Click different years and see stats update
 - [ ] Best year (1984) shows star indicator
 
+### Test Team Management:
+- [ ] Save a team from `/teams` page
+- [ ] Click "My Teams" in navbar
+- [ ] Verify team appears in grid
+- [ ] Check all team info displays correctly
+- [ ] Click "Team 1" button → redirects to `/teams` with team loaded
+- [ ] Go back to "My Teams"
+- [ ] Click "Delete Team" → confirmation dialog appears
+- [ ] Confirm deletion → team removed from list
+- [ ] Empty state shows when no teams exist
+
 ---
 
 ## User-Facing Improvements
@@ -253,6 +310,8 @@ Quick Fill:
 - ❌ 4 clicks to add player by position
 - ❌ Manual team building only
 - ❌ Duplicate players (Bernard King x3)
+- ❌ No way to load saved teams
+- ❌ No way to delete teams
 
 ### After:
 - ✅ Save keeps team (yay!)
@@ -260,6 +319,9 @@ Quick Fill:
 - ✅ 1 click to see position players
 - ✅ 1 click to fill entire team!
 - ✅ One entry per player with year selector
+- ✅ "My Teams" page to manage all saved teams
+- ✅ Load any team to Team 1 or Team 2
+- ✅ Delete teams with confirmation
 
 ---
 
@@ -276,9 +338,44 @@ Quick Fill:
 ## Next Session TODO
 
 1. ✅ **Quick win**: Deduplicate Bernard King entries (30 min) - DONE!
-2. **Feature**: Team management page (2 hrs)
+2. ✅ **Feature**: Team management page (2 hrs) - DONE!
 3. **Feature**: Stats tracking (2 hrs)
+4. **NEW REQUEST**: Historic team search (e.g., "1996 Lakers")
 
-**Current completion**: 5/7 tasks (71%) ✅
-**Time spent**: ~1.5 hours
-**Remaining estimated**: ~4 hours
+**Current completion**: 6/7 tasks (86%) ✅
+**Time spent**: ~2.5 hours
+**Remaining estimated**: ~2 hours + historic teams feature
+
+---
+
+## 🆕 New Feature Request: Historic Team Search
+
+**User Request**: "I'd like to be able to add historic teams from a search box (1996 lakers for example)"
+
+**Implementation Ideas**:
+
+### Option 1: Team Search on Players Page
+- Add a "Team Search" tab/section on `/players` or `/teams` page
+- Search format: `[YEAR] [TEAM NAME]` (e.g., "1996 Lakers", "2016 Warriors")
+- Query: `SELECT * FROM players WHERE season = 1996 AND team = 'Lakers'`
+- Display results in grid with "Add All to Team 1/2" button
+- Quick team building for historic matchups!
+
+### Option 2: Smart Search Enhancement
+- Enhance existing search bar to detect patterns like "YYYY Team"
+- Auto-detect and filter by season + team
+- Example: typing "1996 Lakers" automatically filters to that year/team
+
+### Option 3: Pre-Built Historic Teams
+- Create a `/historic-teams` page
+- Show famous teams: 1996 Bulls, 1987 Lakers, 2016 Warriors, etc.
+- Click to load entire starting 5 or full roster
+- Could seed database with notable teams
+
+**Recommended Approach**: Option 1 (Team Search)
+- Cleanest UX for kids
+- Separate feature, doesn't complicate existing search
+- Easy to implement with existing API
+- Estimated time: 1-2 hours
+
+**Database Schema Note**: Already have `season` and `team` fields in Player model, so no schema changes needed!

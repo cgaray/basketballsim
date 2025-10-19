@@ -25,6 +25,9 @@ interface PlayerCardProps {
   className?: string;
   onSelectTeam?: (player: Player, teamId: 1 | 2) => void;
   onDeselect?: (player: Player) => void;
+  seasonOptions?: number[];
+  selectedSeason?: number;
+  onSeasonChange?: (year: number) => void;
 }
 
 export function PlayerCard({
@@ -35,6 +38,9 @@ export function PlayerCard({
   className,
   onSelectTeam,
   onDeselect,
+  seasonOptions = [],
+  selectedSeason,
+  onSeasonChange,
 }: PlayerCardProps) {
   const handleTeamSelect = (teamId: 1 | 2) => {
     if (onSelectTeam) {
@@ -100,6 +106,23 @@ export function PlayerCard({
         <p className="text-sm text-muted-foreground mb-3">
           {formatTeamName(player.team)}
         </p>
+
+        {/* Season Selector */}
+        {seasonOptions.length > 1 && onSeasonChange && (
+          <div className="mb-3">
+            <select
+              value={selectedSeason || seasonOptions[0]}
+              onChange={(e) => onSeasonChange(parseInt(e.target.value))}
+              className="w-full text-xs bg-muted border border-muted-foreground/20 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {seasonOptions.map(year => (
+                <option key={year} value={year}>
+                  {year} Season
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Key Stats */}
         <div className="grid grid-cols-3 gap-3 mb-4">

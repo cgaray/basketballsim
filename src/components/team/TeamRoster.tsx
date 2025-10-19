@@ -6,20 +6,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Users, Save, Trash2, Trophy, Search, Plus, CheckCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Users, Save, Trash2, X, CheckCircle } from 'lucide-react';
 import { useTeam } from '@/contexts/TeamContext';
 import { Player } from '@/types';
 import { QuickPositionSearch } from '@/components/players/QuickPositionSearch';
+import { cn } from '@/lib/utils/cn';
 
 interface PositionGroupProps {
   position: string;
   players: Player[];
   onRemove: (playerId: number) => void;
-  onQuickAdd: (position: string) => void;
 }
 
 interface TeamRosterProps {
@@ -27,7 +28,7 @@ interface TeamRosterProps {
   availablePlayers?: Player[];
 }
 
-function PositionGroup({ position, players, onRemove, onQuickAdd }: PositionGroupProps) {
+function PositionGroup({ position, players, onRemove }: PositionGroupProps) {
   const positionNames = {
     PG: 'Point Guards',
     SG: 'Shooting Guards',
@@ -36,33 +37,18 @@ function PositionGroup({ position, players, onRemove, onQuickAdd }: PositionGrou
     C: 'Centers',
   };
 
+  if (players.length === 0) return null;
+
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h4 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
+      <h4 className="font-semibold text-sm text-muted-foreground">
           {positionNames[position as keyof typeof positionNames]} ({players.length})
-          {players.length === 0 && <AlertCircle className="w-4 h-4 text-orange-500" />}
         </h4>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onQuickAdd(position)}
-          className="h-7 px-2 text-xs"
-        >
-          <Plus className="w-3 h-3 mr-1" />
-          Add {position}
-        </Button>
-      </div>
-      {players.length === 0 ? (
-        <div className="p-3 border-2 border-dashed border-muted rounded-lg text-center text-muted-foreground text-sm">
-          No {position} players
-        </div>
-      ) : (
         <div className="space-y-1">
           {players.map(player => (
             <div
               key={player.id}
-              className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
+            className="flex items-center justify-between p-2 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
             >
               <div className="flex-1">
                 <div className="font-medium text-sm">{player.name}</div>
@@ -81,7 +67,6 @@ function PositionGroup({ position, players, onRemove, onQuickAdd }: PositionGrou
             </div>
           ))}
         </div>
-      )}
     </div>
   );
 }
@@ -132,97 +117,81 @@ export function TeamRoster({ teamId, availablePlayers = [] }: TeamRosterProps) {
     setQuickSearchPosition('');
   };
 
+  const filledPositions = Object.values(positionCounts).filter(c => c > 0).length;
+  const missingPositions = 5 - filledPositions;
+
   return (
     <Card className="w-full">
-      <CardHeader>
+      <CardHeader className="space-y-3">
+        {/* Team Name Input - Prominent */}
+        <Input
+          value={teamName}
+          onChange={(e) => setTeamName(e.target.value, teamId)}
+          placeholder="Team Name"
+          className="text-lg font-semibold border-0 border-b-2 rounded-none px-0 focus-visible:ring-0"
+        />
+        
+        {/* Metadata Row */}
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>{roster.length}/15 players</span>
+          {isComplete && (
+            <Badge variant="outline" className="text-green-700 border-green-300">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Complete
+            </Badge>
+          )}
+        </div>
+
+        {/* Unified Position Progress */}
         <div className="space-y-2">
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Current Roster ({roster.length}/15)
-            {isComplete && <Trophy className="w-5 h-5 text-yellow-500" />}
-          </CardTitle>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Starting 5</span>
+            <span>{filledPositions}/5 positions filled</span>
+          </div>
+          <div className="flex gap-1">
             {(['PG', 'SG', 'SF', 'PF', 'C'] as const).map(position => {
               const count = positionCounts[position];
-              const isMissing = count === 0;
+              const isEmpty = count === 0;
               return (
-                <Button
+                <button
                   key={position}
-                  variant={isMissing ? "destructive" : "outline"}
-                  size="sm"
                   onClick={() => handleQuickAdd(position)}
-                  className={isMissing ? "animate-pulse" : ""}
+                  className={cn(
+                    "flex-1 h-12 rounded-md text-sm font-medium transition-all flex flex-col items-center justify-center",
+                    isEmpty 
+                      ? "bg-orange-100 text-orange-700 border-2 border-dashed border-orange-300 hover:bg-orange-200" 
+                      : "bg-green-100 text-green-800 border border-green-300 hover:bg-green-200"
+                  )}
                 >
-                  <Plus className="w-4 h-4 mr-1" />
-                  {position} ({count})
-                </Button>
+                  <div>{position}</div>
+                  <div className="text-xs opacity-75">{count}</div>
+                </button>
               );
             })}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Team Name Input */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Team Name</label>
-          <Input
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value, teamId)}
-            placeholder="Enter team name..."
-            className="w-full"
-          />
-        </div>
 
-        {/* Position Summary */}
-        <div className="grid grid-cols-5 gap-2">
-          {Object.entries(positionCounts).map(([pos, count]) => (
-            <Badge
-              key={pos}
-              variant={count > 0 ? "default" : "outline"}
-              className="justify-center py-1"
-            >
-              {pos}: {count}
-            </Badge>
-          ))}
-        </div>
-
-        {/* Roster Status */}
-        <div className="flex items-center gap-2 text-sm">
-          {isComplete ? (
-            <div className="flex items-center gap-2 text-green-600">
-              <Trophy className="w-4 h-4" />
-              Complete starting lineup!
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-orange-600">
-              <AlertCircle className="w-4 h-4" />
-              Missing positions for complete lineup
-            </div>
-          )}
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="p-3 bg-destructive/10 border border-destructive rounded-lg">
-            <div className="flex items-center gap-2 text-destructive text-sm">
-              <AlertCircle className="w-4 h-4" />
-              {error}
-            </div>
-          </div>
+      <CardContent className="space-y-4">
+        {/* Unified Alert Slot */}
+        {(error || successMessage) && (
+          <Alert variant={error ? "destructive" : "default"} className={error ? "" : "bg-green-50 border-green-200 text-green-800"}>
+            {error ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+            <AlertDescription>{error || successMessage}</AlertDescription>
+          </Alert>
         )}
 
-        {successMessage && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center gap-2 text-green-700 text-sm">
-              <CheckCircle className="w-4 h-4" />
-              {successMessage}
-            </div>
-          </div>
-        )}
-
-        {/* Quick Search Component */}
+        {/* Inline Quick Search */}
         {showQuickSearch && (
-          <div className="mb-4">
+          <div className="bg-muted/50 rounded-lg p-3 border">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">
+                Add {quickSearchPosition || 'Player'}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleCloseQuickSearch}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
             <QuickPositionSearch
               teamId={teamId}
               position={quickSearchPosition}
@@ -233,8 +202,20 @@ export function TeamRoster({ teamId, availablePlayers = [] }: TeamRosterProps) {
           </div>
         )}
 
-        {/* Players by Position */}
-        {roster.length > 0 ? (
+        {/* Contextual Helper / Roster Display */}
+        {roster.length === 0 ? (
+          <div className="text-center py-6 px-4 bg-muted/30 rounded-lg border-2 border-dashed">
+            <p className="text-sm text-muted-foreground">
+              👆 Click a position above to find players and build your starting 5
+            </p>
+          </div>
+        ) : (
+          <>
+            {!isComplete && missingPositions > 0 && (
+              <div className="text-sm text-muted-foreground bg-blue-50 border border-blue-200 rounded-lg p-3">
+                💡 <strong>Tip:</strong> You need {missingPositions} more position{missingPositions !== 1 ? 's' : ''} for a complete starting lineup
+              </div>
+            )}
           <div className="space-y-4">
             {(Object.keys(groupedPlayers) as Array<keyof typeof groupedPlayers>).map(position => (
               <PositionGroup
@@ -242,16 +223,10 @@ export function TeamRoster({ teamId, availablePlayers = [] }: TeamRosterProps) {
                 position={position}
                 players={groupedPlayers[position]}
                 onRemove={(playerId) => removePlayer(playerId, teamId)}
-                onQuickAdd={handleQuickAdd}
               />
             ))}
           </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>No players added yet</p>
-            <p className="text-sm">Start building your team by browsing players</p>
-          </div>
+          </>
         )}
 
         {/* Quick Fill Buttons */}
