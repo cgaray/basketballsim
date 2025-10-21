@@ -33,7 +33,13 @@ export async function GET(req: NextRequest) {
       take: limit ? parseInt(limit) : undefined
     });
 
-    return NextResponse.json(matches);
+    // Deserialize playByPlay JSON string back to array
+    const matchesWithParsedPlayByPlay = matches.map(match => ({
+      ...match,
+      playByPlay: match.playByPlay ? JSON.parse(match.playByPlay) : null
+    }));
+
+    return NextResponse.json(matchesWithParsedPlayByPlay);
   } catch (error) {
     console.error('Error fetching matches:', error);
     return NextResponse.json(
@@ -55,6 +61,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Serialize playByPlay array to JSON string for storage
+    const playByPlayString = playByPlay ? JSON.stringify(playByPlay) : null;
+
     const match = await prisma.match.create({
       data: {
         team1Id,
@@ -62,11 +71,15 @@ export async function POST(req: NextRequest) {
         team1Score,
         team2Score,
         winnerId,
-        playByPlay: playByPlay || null
+        playByPlay: playByPlayString
       }
     });
 
-    return NextResponse.json(match, { status: 201 });
+    // Return match with parsed playByPlay for consistency
+    return NextResponse.json({
+      ...match,
+      playByPlay: playByPlay || null
+    }, { status: 201 });
   } catch (error) {
     console.error('Error creating match:', error);
     return NextResponse.json(

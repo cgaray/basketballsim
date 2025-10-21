@@ -8,6 +8,7 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import type { Player } from '@/types';
 import { findBestPlayersByPosition, findWorstPlayersByPosition } from '@/lib/utils/player-stats';
+import { MAX_ROSTER_SIZE, DEFAULT_POSITION_REQUIREMENTS, TEAM_NAME_MIN_LENGTH, TEAM_NAME_MAX_LENGTH } from '@/lib/constants';
 
 interface SingleTeamState {
   roster: Player[];
@@ -92,9 +93,9 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
         return { ...state, error: `Player already in ${existingTeam}` };
       }
 
-      // Check roster limit (15 players max)
-      if (currentTeam.roster.length >= 15) {
-        return { ...state, error: `Team ${teamId} roster is full (15 players max)` };
+      // Check roster limit
+      if (currentTeam.roster.length >= MAX_ROSTER_SIZE) {
+        return { ...state, error: `Team ${teamId} roster is full (${MAX_ROSTER_SIZE} players max)` };
       }
 
       const updatedTeam = {
@@ -123,14 +124,25 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
       };
 
     case 'SET_TEAM_NAME':
+      const teamName = action.payload as string;
+
+      // Validate team name
+      if (teamName.length > TEAM_NAME_MAX_LENGTH) {
+        return {
+          ...state,
+          error: `Team name must be ${TEAM_NAME_MAX_LENGTH} characters or less`,
+        };
+      }
+
       const namedTeam = {
         ...currentTeam,
-        teamName: action.payload,
+        teamName: teamName,
       };
 
       return {
         ...state,
         [teamId === 1 ? 'team1' : 'team2']: namedTeam,
+        error: null,
         successMessage: null,
       };
 
@@ -213,7 +225,7 @@ function teamReducer(state: TeamState, action: TeamAction): TeamState {
       const newPlayers = (action.payload as Player[]).filter(p => !currentPlayerIds.has(p.id));
 
       // Check roster limit
-      const availableSlots = 15 - currentTeam.roster.length;
+      const availableSlots = MAX_ROSTER_SIZE - currentTeam.roster.length;
       if (newPlayers.length > availableSlots) {
         return {
           ...state,
@@ -279,8 +291,15 @@ export function TeamProvider({ children }: { children: ReactNode }) {
   const saveTeam = async (teamId: 1 | 2) => {
     const team = teamId === 1 ? state.team1 : state.team2;
 
-    if (!team.teamName.trim()) {
+    // Validate team name
+    const trimmedName = team.teamName.trim();
+    if (trimmedName.length < TEAM_NAME_MIN_LENGTH) {
       dispatch({ type: 'SET_ERROR', payload: 'Team name is required' });
+      return;
+    }
+
+    if (trimmedName.length > TEAM_NAME_MAX_LENGTH) {
+      dispatch({ type: 'SET_ERROR', payload: `Team name must be ${TEAM_NAME_MAX_LENGTH} characters or less` });
       return;
     }
 
@@ -380,7 +399,7 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'ADD_MULTIPLE_PLAYERS', payload: players, teamId });
   };
 
-  const fillTeamWithBestPlayers = (availablePlayers: Player[], teamId: 1 | 2, requirements: Record<string, number> = { PG: 1, SG: 1, SF: 1, PF: 1, C: 1 }) => {
+  const fillTeamWithBestPlayers = (availablePlayers: Player[], teamId: 1 | 2, requirements: Record<string, number> = DEFAULT_POSITION_REQUIREMENTS) => {
     try {
       // Get all players currently in both teams
       const allCurrentPlayers = [...state.team1.roster, ...state.team2.roster];
@@ -404,7 +423,7 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const fillTeamWithWorstPlayers = (availablePlayers: Player[], teamId: 1 | 2, requirements: Record<string, number> = { PG: 1, SG: 1, SF: 1, PF: 1, C: 1 }) => {
+  const fillTeamWithWorstPlayers = (availablePlayers: Player[], teamId: 1 | 2, requirements: Record<string, number> = DEFAULT_POSITION_REQUIREMENTS) => {
     try {
       // Get all players currently in both teams
       const allCurrentPlayers = [...state.team1.roster, ...state.team2.roster];

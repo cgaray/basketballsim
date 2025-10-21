@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, X, AlertCircle, Users } from 'lucide-react';
 import { Player } from '@/types';
 import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
+import { POSITIONS, DEFAULT_POSITION_REQUIREMENTS } from '@/lib/constants';
 
 interface QuickPositionSearchProps {
   teamId: 1 | 2;
@@ -16,8 +17,6 @@ interface QuickPositionSearchProps {
   onAddPlayer: (player: Player, teamId: 1 | 2) => void;
   onClose?: () => void;
 }
-
-const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C'];
 
 export function QuickPositionSearch({
   teamId,
@@ -37,8 +36,13 @@ export function QuickPositionSearch({
   // Get positions that need filling
   const getMissingPositions = () => {
     const positionCounts: Record<string, number> = {
-      PG: 0, SG: 0, SF: 0, PF: 0, C: 0
+      ...DEFAULT_POSITION_REQUIREMENTS
     };
+
+    // Reset counts to 0
+    Object.keys(positionCounts).forEach(pos => {
+      positionCounts[pos] = 0;
+    });
 
     currentRoster.forEach(player => {
       if (positionCounts[player.position] !== undefined) {

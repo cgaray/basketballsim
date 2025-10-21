@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Users, Calendar, ArrowLeft } from 'lucide-react';
 import { useTeam } from '@/contexts/TeamContext';
 import type { Player } from '@/types';
+import { DEFAULT_POSITION_REQUIREMENTS } from '@/lib/constants';
 
 interface SavedTeam {
   id: number;
@@ -90,7 +91,13 @@ export default function TeamManagePage() {
   };
 
   const getPositionCounts = (players: Player[]): Record<string, number> => {
-    const counts: Record<string, number> = { PG: 0, SG: 0, SF: 0, PF: 0, C: 0 };
+    const counts: Record<string, number> = { ...DEFAULT_POSITION_REQUIREMENTS };
+
+    // Reset counts to 0
+    Object.keys(counts).forEach(pos => {
+      counts[pos] = 0;
+    });
+
     players.forEach(player => {
       if (counts[player.position] !== undefined) {
         counts[player.position]++;

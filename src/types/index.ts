@@ -156,13 +156,8 @@ export interface PositionRequirements {
   C: number;  // Center
 }
 
-export const DEFAULT_POSITION_REQUIREMENTS: PositionRequirements = {
-  PG: 1,
-  SG: 1,
-  SF: 1,
-  PF: 1,
-  C: 1,
-};
+// Re-export from constants for backward compatibility
+export { DEFAULT_POSITION_REQUIREMENTS } from '@/lib/constants';
 
 export interface GameSettings {
   quarters: number;
