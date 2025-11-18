@@ -15,7 +15,7 @@ interface CreateTeamRequest {
 interface Team {
   id: number;
   name: string;
-  players: Player[]; // Will be full player objects after fetching
+  players: Player[];
   createdAt: Date;
 }
 
@@ -27,48 +27,14 @@ export async function GET(request: NextRequest): Promise<NextResponse<APIRespons
     const teams = await prisma.team.findMany({
       where: userId ? { userId } : {},
       orderBy: { createdAt: 'desc' },
+      include: {
+        players: true
+      }
     });
-
-    // Fetch full player details for each team
-    const teamsWithFullPlayers = await Promise.all(
-      teams.map(async (team) => {
-        const playerIds = JSON.parse(team.players) as number[];
-
-        // Get full player details
-        const players = await prisma.player.findMany({
-          where: { id: { in: playerIds } },
-          select: {
-            id: true,
-            name: true,
-            position: true,
-            team: true,
-            season: true,
-            pointsPerGame: true,
-            reboundsPerGame: true,
-            assistsPerGame: true,
-            stealsPerGame: true,
-            blocksPerGame: true,
-            fieldGoalPercentage: true,
-            threePointPercentage: true,
-            freeThrowPercentage: true,
-          },
-        });
-
-        // Maintain the original order of playerIds
-        const orderedPlayers = playerIds.map(id =>
-          players.find(p => p.id === id)
-        ).filter(Boolean);
-
-        return {
-          ...team,
-          players: orderedPlayers,
-        };
-      })
-    );
 
     return NextResponse.json({
       success: true,
-      data: teamsWithFullPlayers,
+      data: teams as unknown as Team[], // Prisma types might need adjustment, casting for now
     });
 
   } catch (error) {
@@ -119,45 +85,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<APIRespon
     const team = await prisma.team.create({
       data: {
         name,
-        players: JSON.stringify(players),
         userId: null, // For now, no user system
+        players: {
+          connect: players.map(id => ({ id }))
+        }
       },
+      include: {
+        players: true
+      }
     });
-
-    // Get full player details for the created team
-    const fullPlayers = await prisma.player.findMany({
-      where: { id: { in: players } },
-      select: {
-        id: true,
-        name: true,
-        position: true,
-        team: true,
-        season: true,
-        pointsPerGame: true,
-        reboundsPerGame: true,
-        assistsPerGame: true,
-        stealsPerGame: true,
-        blocksPerGame: true,
-        fieldGoalPercentage: true,
-        threePointPercentage: true,
-        freeThrowPercentage: true,
-      },
-    });
-
-    // Maintain the original order of playerIds
-    const orderedPlayers = players.map(id =>
-      fullPlayers.find(p => p.id === id)
-    ).filter(Boolean);
-
-    const teamWithFullPlayers = {
-      ...team,
-      players: orderedPlayers,
-    };
 
     return NextResponse.json({
       success: true,
-      data: teamWithFullPlayers,
-    });
+      data: team as unknown as Team,
+    }, { status: 201 });
 
   } catch (error) {
     console.error('Error creating team:', error);

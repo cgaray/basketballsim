@@ -24,9 +24,9 @@ export interface Player {
 export interface Team {
   id: number;
   name: string;
-  userId?: string;
-  players: number[]; // Array of player IDs
-  createdAt: Date;
+  userId: string | null;
+  players: Player[];
+  createdAt: Date | string;
 }
 
 export interface Match {

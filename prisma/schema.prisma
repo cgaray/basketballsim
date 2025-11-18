@@ -17,7 +17,7 @@ model Player {
   id                    Int      @id @default(autoincrement())
   name                  String
   position              String
-  team                  String?
+  team                  String?  // Keep for legacy/display, or remove if fully normalized. Let's keep for now but rely on relation.
   season                Int?
   gamesPlayed           Int?
   pointsPerGame         Float?
@@ -31,6 +31,10 @@ model Player {
   imageUrl              String?
   createdAt             DateTime @default(now())
 
+  // Relations
+  teamId                Int?
+  Team                  Team?    @relation(fields: [teamId], references: [id])
+
   @@map("players")
 }
 
@@ -38,8 +42,12 @@ model Team {
   id        Int      @id @default(autoincrement())
   name      String
   userId    String?
-  players   String   // JSON array of player IDs
   createdAt DateTime @default(now())
+
+  // Relations
+  players     Player[]
+  homeMatches Match[]  @relation("HomeTeam")
+  awayMatches Match[]  @relation("AwayTeam")
 
   @@map("teams")
 }
@@ -53,6 +61,10 @@ model Match {
   winnerId    Int?
   playByPlay  String?  // JSON string of play-by-play data
   createdAt   DateTime @default(now())
+
+  // Relations
+  team1       Team     @relation("HomeTeam", fields: [team1Id], references: [id])
+  team2       Team     @relation("AwayTeam", fields: [team2Id], references: [id])
 
   @@map("matches")
 }
