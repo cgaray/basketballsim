@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Users, Calendar, ArrowLeft } from 'lucide-react';
 import { useTeam } from '@/contexts/TeamContext';
 import type { Player } from '@/types';
+import { TeamStatsCard } from '@/components/team/TeamStatsCard';
+import { BarChart2 } from 'lucide-react';
 
 interface SavedTeam {
   id: number;
@@ -29,6 +31,9 @@ export default function TeamManagePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [stats, setStats] = useState<Record<number, any>>({});
+  const [loadingStats, setLoadingStats] = useState<Record<number, boolean>>({});
+  const [showStats, setShowStats] = useState<Record<number, boolean>>({});
 
   // Fetch all saved teams
   useEffect(() => {
@@ -81,6 +86,29 @@ export default function TeamManagePage() {
       alert(err instanceof Error ? err.message : 'Failed to delete team');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const fetchTeamStats = async (teamId: number) => {
+    if (stats[teamId]) {
+      setShowStats(prev => ({ ...prev, [teamId]: !prev[teamId] }));
+      return;
+    }
+
+    setLoadingStats(prev => ({ ...prev, [teamId]: true }));
+    setShowStats(prev => ({ ...prev, [teamId]: true }));
+
+    try {
+      const response = await fetch(`/api/teams/${teamId}/stats`);
+      const result = await response.json();
+
+      if (result.success) {
+        setStats(prev => ({ ...prev, [teamId]: result.data }));
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    } finally {
+      setLoadingStats(prev => ({ ...prev, [teamId]: false }));
     }
   };
 
@@ -180,6 +208,16 @@ export default function TeamManagePage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Stats Section */}
+                    {showStats[team.id] && (
+                      <div className="mb-4">
+                        <TeamStatsCard
+                          stats={stats[team.id] || { totalGames: 0, wins: 0, losses: 0, winPercentage: 0, avgPointsScored: 0, avgPointsAllowed: 0 }}
+                          isLoading={loadingStats[team.id]}
+                        />
+                      </div>
+                    )}
+
                     {/* Position Breakdown */}
                     <div>
                       <p className="text-sm font-medium mb-2">Positions:</p>
@@ -208,65 +246,80 @@ export default function TeamManagePage() {
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="pt-4 border-t space-y-2">
-                      <p className="text-sm font-medium mb-2">Load into:</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleLoadTeam(team, 1)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white"
-                        >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Team 1
-                        </Button>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleLoadTeam(team, 2)}
-                          className="bg-green-500 hover:bg-green-600 text-white"
-                        >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Team 2
-                        </Button>
-                      </div>
+                  </div>
 
+                  {/* Actions */}
+                  <div className="pt-4 border-t space-y-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchTeamStats(team.id)}
+                      className="w-full"
+                    >
+                      <BarChart2 className="w-4 h-4 mr-2" />
+                      {showStats[team.id] ? 'Hide Stats' : 'View Stats'}
+                    </Button>
+
+                    <p className="text-sm font-medium mb-2 pt-2">Load into:</p>
+                    <div className="grid grid-cols-2 gap-2">
                       <Button
-                        variant="destructive"
+                        variant="default"
                         size="sm"
-                        onClick={() => handleDelete(team.id, team.name)}
-                        disabled={isDeleting}
-                        className="w-full"
+                        onClick={() => handleLoadTeam(team, 1)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
                       >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        {isDeleting ? 'Deleting...' : 'Delete Team'}
+                        <Edit className="w-4 h-4 mr-1" />
+                        Team 1
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleLoadTeam(team, 2)}
+                        className="bg-green-500 hover:bg-green-600 text-white"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Team 2
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
 
-        {/* Stats Summary */}
-        {!loading && !error && teams.length > 0 && (
-          <div className="mt-8 text-center">
-            <Card className="inline-block">
-              <CardContent className="pt-6">
-                <p className="text-lg">
-                  <span className="font-bold text-purple-600">{teams.length}</span> saved team{teams.length !== 1 ? 's' : ''}
-                  {' • '}
-                  <span className="font-bold text-purple-600">
-                    {teams.reduce((sum, t) => sum + t.players.length, 0)}
-                  </span> total players
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </main>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(team.id, team.name)}
+                      disabled={isDeleting}
+                      className="w-full"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      {isDeleting ? 'Deleting...' : 'Delete Team'}
+                    </Button>
+                  </div>
+                </CardContent>
+                </Card>
+        );
+            })}
     </div>
+  )
+}
+
+{/* Stats Summary */ }
+{
+  !loading && !error && teams.length > 0 && (
+    <div className="mt-8 text-center">
+      <Card className="inline-block">
+        <CardContent className="pt-6">
+          <p className="text-lg">
+            <span className="font-bold text-purple-600">{teams.length}</span> saved team{teams.length !== 1 ? 's' : ''}
+            {' • '}
+            <span className="font-bold text-purple-600">
+              {teams.reduce((sum, t) => sum + t.players.length, 0)}
+            </span> total players
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+      </main >
+    </div >
   );
 }
