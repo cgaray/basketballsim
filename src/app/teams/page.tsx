@@ -5,6 +5,7 @@ import { TeamRoster } from '@/components/team/TeamRoster';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { PlayerCard } from '@/components/cards/PlayerCard';
+import { PlayerCardSkeleton } from '@/components/cards/PlayerCardSkeleton';
 import { Player, PlayerSearchResult } from '@/types';
 import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 import { useTeam } from '@/contexts/TeamContext';
@@ -117,38 +118,42 @@ export default function TeamsPage() {
   const getPlayerTeamStatus = (playerId: number) => isPlayerInTeam(playerId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="container mx-auto px-4 py-8 space-y-6">
         <div className="text-center">
-          <h1 className="text-5xl font-black text-orange-600 mb-2">Pick Your Players!</h1>
-          <p className="text-xl text-gray-600">Type a name like "Max" or a position like "PG"</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Build Your Teams</h1>
+          <p className="text-muted-foreground">Search for players by name or position to build your rosters</p>
         </div>
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-xl mx-auto">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
               type="text"
-              placeholder="Try: Max, LeBron, center, point guard, PG..."
+              placeholder="Search by name or position (e.g., LeBron, PG, center)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-14 h-16 text-2xl border-4 border-orange-300 focus:border-orange-500 rounded-xl shadow-lg"
+              className="pl-10 h-12"
             />
           </div>
         </div>
 
         {loading && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏀</div>
-            <p className="text-2xl text-gray-600">Finding players...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <PlayerCardSkeleton key={i} />
+            ))}
           </div>
         )}
 
         {!loading && players.length === 0 && searchTerm && (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🤷</div>
-            <p className="text-2xl text-gray-600">No players found. Try a different name!</p>
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <p className="text-lg text-muted-foreground">No players found for "{searchTerm}"</p>
+            <p className="text-sm text-muted-foreground mt-1">Try a different name or position</p>
           </div>
         )}
 
@@ -193,17 +198,17 @@ export default function TeamsPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8">
-          <div className="space-y-4">
-            <div className="bg-blue-500 text-white text-center py-4 rounded-xl shadow-lg">
-              <h2 className="text-3xl font-black">⭐ TEAM 1 ⭐</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
+          <div className="space-y-3">
+            <div className="bg-blue-500 text-white text-center py-3 rounded-lg">
+              <h2 className="text-xl font-bold">Team 1</h2>
             </div>
             <TeamRoster teamId={1} availablePlayers={players} />
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-red-500 text-white text-center py-4 rounded-xl shadow-lg">
-              <h2 className="text-3xl font-black">🔥 TEAM 2 🔥</h2>
+          <div className="space-y-3">
+            <div className="bg-red-500 text-white text-center py-3 rounded-lg">
+              <h2 className="text-xl font-bold">Team 2</h2>
             </div>
             <TeamRoster teamId={2} availablePlayers={players} />
           </div>

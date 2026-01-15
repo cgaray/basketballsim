@@ -1,6 +1,6 @@
 /**
  * PlayerCard Component
- * Displays essential player information in a simple card format
+ * Displays player information with improved layout and season selector
  */
 
 import React from 'react';
@@ -14,7 +14,7 @@ import {
   formatTeamName,
   getPositionAbbreviation
 } from '@/lib/utils/format';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 interface PlayerCardProps {
@@ -56,99 +56,106 @@ export function PlayerCard({
 
   const position = getPositionAbbreviation(player.position);
 
-  const getPositionBadgeVariant = (pos: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    const variants = {
-      PG: 'default' as const,
-      SG: 'secondary' as const,
-      SF: 'outline' as const,
-      PF: 'destructive' as const,
-      C: 'default' as const,
-    };
-    return variants[pos as keyof typeof variants] || 'outline';
+  const positionColors: Record<string, string> = {
+    PG: 'bg-purple-100 text-purple-800 border-purple-200',
+    SG: 'bg-blue-100 text-blue-800 border-blue-200',
+    SF: 'bg-green-100 text-green-800 border-green-200',
+    PF: 'bg-orange-100 text-orange-800 border-orange-200',
+    C: 'bg-red-100 text-red-800 border-red-200',
   };
 
   const getTeamColorClass = () => {
     if (selectedTeam === 1) return 'ring-2 ring-blue-500 bg-blue-50';
-    if (selectedTeam === 2) return 'ring-2 ring-green-500 bg-green-50';
+    if (selectedTeam === 2) return 'ring-2 ring-red-500 bg-red-50';
     return '';
   };
 
   return (
     <Card
       className={cn(
-        'transition-all duration-200',
+        'transition-all duration-200 overflow-hidden',
         'hover:shadow-md',
         isSelected && getTeamColorClass(),
         className
       )}
     >
       <CardContent className="p-4">
-        {/* Header with Name and Position */}
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-lg text-foreground truncate">
-            {formatPlayerName(player.name)}
-          </h3>
-          <div className="flex items-center gap-2">
+        {/* Header: Name + Position + Team Badge */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-lg text-foreground truncate">
+              {formatPlayerName(player.name)}
+            </h3>
+            <p className="text-sm text-muted-foreground truncate">
+              {formatTeamName(player.team)}
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-1">
             {selectedTeam && (
-              <Badge variant="secondary" className={cn(
-                selectedTeam === 1 ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+              <Badge className={cn(
+                'text-xs',
+                selectedTeam === 1 ? 'bg-blue-500' : 'bg-red-500'
               )}>
                 Team {selectedTeam}
               </Badge>
             )}
-            <Badge variant={getPositionBadgeVariant(position)}>
+            <Badge className={cn('border', positionColors[position] || 'bg-gray-100')}>
               {position}
             </Badge>
           </div>
         </div>
 
-        {/* Team */}
-        <p className="text-sm text-muted-foreground mb-3">
-          {formatTeamName(player.team)}
-        </p>
-
-        {/* Season Selector */}
+        {/* Season Selector - Improved */}
         {seasonOptions.length > 1 && onSeasonChange && (
-          <div className="mb-3">
-            <select
-              value={selectedSeason || seasonOptions[0]}
-              onChange={(e) => onSeasonChange(parseInt(e.target.value))}
-              className="w-full text-xs bg-muted border border-muted-foreground/20 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary"
-            >
+          <div className="mb-4">
+            <div className="flex items-center gap-1 mb-2">
+              <Calendar className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Season</span>
+            </div>
+            <div className="flex gap-1 flex-wrap">
               {seasonOptions.map(year => (
-                <option key={year} value={year}>
-                  {year} Season
-                </option>
+                <button
+                  key={year}
+                  onClick={() => onSeasonChange(year)}
+                  className={cn(
+                    'px-2 py-1 text-xs rounded-md border transition-colors',
+                    selectedSeason === year || (!selectedSeason && year === seasonOptions[0])
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-muted hover:bg-muted/80 border-transparent'
+                  )}
+                >
+                  {year}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
         )}
 
-        {/* Key Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        {/* Stats Grid - Improved */}
+        <div className="grid grid-cols-3 gap-2 mb-4 p-3 bg-muted/50 rounded-lg">
           <div className="text-center">
-            <div className="text-lg font-bold text-foreground">
+            <div className="text-2xl font-bold text-foreground">
               {formatDecimal(player.pointsPerGame)}
             </div>
-            <div className="text-xs text-muted-foreground">PPG</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">PPG</div>
           </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-foreground">
+          <div className="text-center border-x border-border">
+            <div className="text-2xl font-bold text-foreground">
               {formatDecimal(player.reboundsPerGame)}
             </div>
-            <div className="text-xs text-muted-foreground">RPG</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">RPG</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold text-foreground">
+            <div className="text-2xl font-bold text-foreground">
               {formatDecimal(player.assistsPerGame)}
             </div>
-            <div className="text-xs text-muted-foreground">APG</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">APG</div>
           </div>
         </div>
 
         {/* Action Buttons */}
         {showActions && (
-          <div className="space-y-2">
+          <div>
             {isSelected ? (
               <Button
                 variant="destructive"
@@ -165,27 +172,25 @@ export function PlayerCard({
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <Button
-                  variant="default"
-                  size="default"
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
+                  size="sm"
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleTeamSelect(1);
                   }}
                 >
-                  <Plus className="w-5 h-5 mr-1" />
+                  <Plus className="w-4 h-4 mr-1" />
                   Team 1
                 </Button>
                 <Button
-                  variant="default"
-                  size="default"
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
+                  size="sm"
+                  className="bg-red-500 hover:bg-red-600 text-white"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleTeamSelect(2);
                   }}
                 >
-                  <Plus className="w-5 h-5 mr-1" />
+                  <Plus className="w-4 h-4 mr-1" />
                   Team 2
                 </Button>
               </div>

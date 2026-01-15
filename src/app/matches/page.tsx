@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent } from '@/components/ui/card';
 import { MatchSimulator } from '@/components/matches/MatchSimulator';
 import { TeamSelector } from '@/components/matches/TeamSelector';
 import { Navbar } from '@/components/layout/Navbar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Player } from '@/types';
+import { Play, Users } from 'lucide-react';
 
 interface Team {
   id: number;
@@ -71,8 +74,27 @@ export default function MatchesPage() {
     return (
       <>
         <Navbar />
-        <div className="flex justify-center items-center min-h-[600px]">
-          <p className="text-gray-600">Loading teams...</p>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center mb-8">
+            <Skeleton className="h-10 w-64 mx-auto mb-4" />
+            <Skeleton className="h-6 w-48 mx-auto" />
+          </div>
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </>
     );
@@ -108,12 +130,14 @@ export default function MatchesPage() {
     <>
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-5xl font-bold mb-4 text-center bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
-          🏀 Battle Time! 🏀
-        </h1>
-        <p className="text-center text-xl mb-8 text-gray-600">
-          Pick two teams and watch them battle!
-        </p>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2 text-foreground">
+            Simulate Match
+          </h1>
+          <p className="text-muted-foreground">
+            Select two teams to simulate a head-to-head match
+          </p>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           <TeamSelector
@@ -140,18 +164,25 @@ export default function MatchesPage() {
             size="lg"
             onClick={startSimulation}
             disabled={!selectedTeam1 || !selectedTeam2}
-            className="px-12 py-8 text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+            className="px-8 py-6 text-lg font-semibold"
           >
-            ⚡ START BATTLE! ⚡
+            <Play className="w-5 h-5 mr-2" />
+            Start Simulation
           </Button>
         </div>
 
         {teams.length === 0 && (
-          <Alert className="mt-8 bg-orange-50 border-orange-200">
-            <AlertDescription className="text-lg">
-              No teams yet! Go to Teams and build your squad first!
-            </AlertDescription>
-          </Alert>
+          <Card className="max-w-md mx-auto mt-8">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <h3 className="font-semibold mb-2">No Teams Available</h3>
+              <p className="text-sm text-muted-foreground">
+                Build at least two teams to start simulating matches.
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
     </>

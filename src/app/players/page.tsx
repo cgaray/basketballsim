@@ -8,9 +8,10 @@
 import React, { useState, useEffect } from 'react';
 import { PlayerSearch } from '@/components/players/PlayerSearch';
 import { PlayerCard } from '@/components/cards/PlayerCard';
+import { PlayerCardSkeleton } from '@/components/cards/PlayerCardSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Circle, Users, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Circle, Users, ChevronLeft, ChevronRight, Search, RefreshCw } from 'lucide-react';
 import { Player, PlayerSearchResult } from '@/types';
 import { analyzePlayerYears, getPlayerForYear } from '@/lib/utils/player-stats';
 import { useTeam } from '@/contexts/TeamContext';
@@ -190,21 +191,30 @@ export default function PlayersPage() {
 
         {/* Players Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-basketball-orange mx-auto mb-4" />
-              <p className="text-gray-600">Loading players...</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <PlayerCardSkeleton key={i} />
+            ))}
           </div>
         ) : players.length === 0 ? (
           <Card className="max-w-md mx-auto">
             <CardContent className="p-8 text-center">
-              <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Players Found</h3>
-              <p className="text-gray-600 mb-4">
-                Try adjusting your search criteria or filters.
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No Players Found</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm || selectedPosition
+                  ? "Try adjusting your search criteria or clearing filters."
+                  : "No players available in the database."
+                }
               </p>
-              <Button onClick={() => fetchPlayers()}>Show All Players</Button>
+              {(searchTerm || selectedPosition) && (
+                <Button variant="outline" onClick={() => fetchPlayers()}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Show All Players
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
@@ -239,43 +249,89 @@ export default function PlayersPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(pagination.page - 1)}
-                  disabled={pagination.page <= 1}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
-                </Button>
-                
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = Math.max(1, Math.min(totalPages - 4, pagination.page - 2)) + i;
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={pageNum === pagination.page ? 'basketball' : 'outline'}
-                        size="sm"
-                        onClick={() => handlePageChange(pageNum)}
-                        className="w-8 h-8 p-0"
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                </div>
+              <div className="flex flex-col items-center gap-4">
+                {/* Page Info */}
+                <p className="text-sm text-muted-foreground">
+                  Page {pagination.page} of {totalPages}
+                </p>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(pagination.page + 1)}
-                  disabled={pagination.page >= totalPages}
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
+                {/* Navigation Controls */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page <= 1}
+                    className="disabled:opacity-50"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    Previous
+                  </Button>
+
+                  <div className="flex items-center gap-1">
+                    {/* First page */}
+                    {pagination.page > 3 && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(1)}
+                          className="w-9 h-9 p-0"
+                        >
+                          1
+                        </Button>
+                        {pagination.page > 4 && (
+                          <span className="px-2 text-muted-foreground">...</span>
+                        )}
+                      </>
+                    )}
+
+                    {/* Surrounding pages */}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageNum = Math.max(1, Math.min(totalPages - 4, pagination.page - 2)) + i;
+                      if (pageNum < 1 || pageNum > totalPages) return null;
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={pageNum === pagination.page ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`w-9 h-9 p-0 ${pageNum === pagination.page ? 'bg-primary' : ''}`}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+
+                    {/* Last page */}
+                    {pagination.page < totalPages - 2 && (
+                      <>
+                        {pagination.page < totalPages - 3 && (
+                          <span className="px-2 text-muted-foreground">...</span>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(totalPages)}
+                          className="w-9 h-9 p-0"
+                        >
+                          {totalPages}
+                        </Button>
+                      </>
+                    )}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page >= totalPages}
+                    className="disabled:opacity-50"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
               </div>
             )}
           </>

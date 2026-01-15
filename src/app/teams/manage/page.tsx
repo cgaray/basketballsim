@@ -128,7 +128,7 @@ export default function TeamManagePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="container mx-auto px-4 py-8">
@@ -143,15 +143,33 @@ export default function TeamManagePage() {
             Back to Team Builder
           </Button>
 
-          <h1 className="text-5xl font-black text-purple-600 mb-2">My Saved Teams</h1>
-          <p className="text-xl text-gray-600">Load, edit, or delete your teams</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">My Saved Teams</h1>
+          <p className="text-muted-foreground">Load, edit, or delete your teams</p>
         </div>
 
         {/* Loading State */}
         {loading && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏀</div>
-            <p className="text-2xl text-gray-600">Loading your teams...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <div className="h-6 bg-muted rounded w-32 mb-2" />
+                  <div className="h-4 bg-muted rounded w-24" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <div key={j} className="h-6 bg-muted rounded w-12" />
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    {Array.from({ length: 3 }).map((_, j) => (
+                      <div key={j} className="h-4 bg-muted rounded" />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
 
@@ -173,16 +191,23 @@ export default function TeamManagePage() {
 
         {/* Empty State */}
         {!loading && !error && teams.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📦</div>
-            <p className="text-2xl text-gray-600 mb-4">No saved teams yet!</p>
-            <Button
-              onClick={() => router.push('/teams')}
-              className="bg-purple-500 hover:bg-purple-600 text-white font-bold"
-            >
-              Build Your First Team
-            </Button>
-          </div>
+          <Card className="max-w-md mx-auto">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">No Saved Teams</h3>
+              <p className="text-muted-foreground mb-6">
+                Build your first team to start simulating matches and tracking stats.
+              </p>
+              <Button
+                onClick={() => router.push('/teams')}
+                className="bg-purple-500 hover:bg-purple-600 text-white"
+              >
+                Build Your First Team
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {/* Teams Grid */}
@@ -246,80 +271,75 @@ export default function TeamManagePage() {
                       </div>
                     </div>
 
-                  </div>
-
-                  {/* Actions */}
-                  <div className="pt-4 border-t space-y-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fetchTeamStats(team.id)}
-                      className="w-full"
-                    >
-                      <BarChart2 className="w-4 h-4 mr-2" />
-                      {showStats[team.id] ? 'Hide Stats' : 'View Stats'}
-                    </Button>
-
-                    <p className="text-sm font-medium mb-2 pt-2">Load into:</p>
-                    <div className="grid grid-cols-2 gap-2">
+                    {/* Actions */}
+                    <div className="pt-4 border-t space-y-2">
                       <Button
-                        variant="default"
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleLoadTeam(team, 1)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                        onClick={() => fetchTeamStats(team.id)}
+                        className="w-full"
                       >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Team 1
+                        <BarChart2 className="w-4 h-4 mr-2" />
+                        {showStats[team.id] ? 'Hide Stats' : 'View Stats'}
                       </Button>
+
+                      <p className="text-sm font-medium mb-2 pt-2">Load into:</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleLoadTeam(team, 1)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Team 1
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleLoadTeam(team, 2)}
+                          className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Team 2
+                        </Button>
+                      </div>
+
                       <Button
-                        variant="default"
+                        variant="destructive"
                         size="sm"
-                        onClick={() => handleLoadTeam(team, 2)}
-                        className="bg-green-500 hover:bg-green-600 text-white"
+                        onClick={() => handleDelete(team.id, team.name)}
+                        disabled={isDeleting}
+                        className="w-full"
                       >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Team 2
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        {isDeleting ? 'Deleting...' : 'Delete Team'}
                       </Button>
                     </div>
-
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(team.id, team.name)}
-                      disabled={isDeleting}
-                      className="w-full"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      {isDeleting ? 'Deleting...' : 'Delete Team'}
-                    </Button>
-                  </div>
-                </CardContent>
+                  </CardContent>
                 </Card>
-        );
+              );
             })}
-    </div>
-  )
-}
+          </div>
+        )}
 
-{/* Stats Summary */ }
-{
-  !loading && !error && teams.length > 0 && (
-    <div className="mt-8 text-center">
-      <Card className="inline-block">
-        <CardContent className="pt-6">
-          <p className="text-lg">
-            <span className="font-bold text-purple-600">{teams.length}</span> saved team{teams.length !== 1 ? 's' : ''}
-            {' • '}
-            <span className="font-bold text-purple-600">
-              {teams.reduce((sum, t) => sum + t.players.length, 0)}
-            </span> total players
-          </p>
-        </CardContent>
-      </Card>
+        {/* Stats Summary */}
+        {!loading && !error && teams.length > 0 && (
+          <div className="mt-8 text-center">
+            <Card className="inline-block">
+              <CardContent className="pt-6">
+                <p className="text-lg">
+                  <span className="font-bold text-purple-600">{teams.length}</span> saved team{teams.length !== 1 ? 's' : ''}
+                  {' • '}
+                  <span className="font-bold text-purple-600">
+                    {teams.reduce((sum, t) => sum + t.players.length, 0)}
+                  </span> total players
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </main>
     </div>
-  )
-}
-      </main >
-    </div >
   );
 }
