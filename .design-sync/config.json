@@ -1,0 +1,39 @@
+{
+  "pkg": "basketball",
+  "globalName": "BasketballUI",
+  "projectId": "cc845860-4e04-4b2a-9fc4-95ab24492614",
+  "shape": "package",
+  "entry": ".design-sync/entry.tsx",
+  "srcDir": "src",
+  "tsconfig": "tsconfig.json",
+  "cssEntry": ".design-sync/compiled.css",
+  "readmeHeader": ".design-sync/conventions.md",
+  "componentSrcMap": {
+    "Button": "src/components/ui/button.tsx",
+    "Card": "src/components/ui/card.tsx",
+    "Input": "src/components/ui/input.tsx",
+    "Label": "src/components/ui/label.tsx",
+    "Select": "src/components/ui/select.tsx",
+    "Separator": "src/components/ui/separator.tsx",
+    "Badge": "src/components/ui/badge.tsx",
+    "Alert": "src/components/ui/alert.tsx",
+    "YearSelector": "src/components/ui/year-selector.tsx",
+    "buttonVariants": null,
+    "badgeVariants": null
+  },
+  "dtsPropsFor": {
+    "Button": "/** Visual style variant. */\n  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';\n  /** Control size. `icon` is a square icon-only button. */\n  size?: 'default' | 'sm' | 'lg' | 'icon';\n  /** Render as the single child element (Radix Slot) instead of a native <button>. */\n  asChild?: boolean;\n  children?: React.ReactNode;\n  className?: string;\n  disabled?: boolean;\n  type?: 'button' | 'submit' | 'reset';\n  onClick?: React.MouseEventHandler<HTMLButtonElement>;\n  /** Also accepts all standard <button> HTML attributes. */",
+    "Badge": "/** Visual style variant. */\n  variant?: 'default' | 'secondary' | 'destructive' | 'outline';\n  children?: React.ReactNode;\n  className?: string;\n  /** Also accepts all standard <div> HTML attributes. */",
+    "Input": "/** Native input type, e.g. 'text' | 'email' | 'password' | 'number' | 'search'. */\n  type?: React.HTMLInputTypeAttribute;\n  value?: string | number;\n  defaultValue?: string | number;\n  placeholder?: string;\n  disabled?: boolean;\n  readOnly?: boolean;\n  required?: boolean;\n  name?: string;\n  className?: string;\n  onChange?: React.ChangeEventHandler<HTMLInputElement>;\n  /** Also accepts all standard <input> HTML attributes. */",
+    "Label": "/** id of the form control this label is associated with. */\n  htmlFor?: string;\n  children?: React.ReactNode;\n  className?: string;\n  /** Built on @radix-ui/react-label; also accepts its Root props. */",
+    "Select": "/** Controlled selected value. */\n  value?: string;\n  defaultValue?: string;\n  onValueChange?: (value: string) => void;\n  open?: boolean;\n  defaultOpen?: boolean;\n  onOpenChange?: (open: boolean) => void;\n  dir?: 'ltr' | 'rtl';\n  name?: string;\n  disabled?: boolean;\n  required?: boolean;\n  /** Compose with SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectSeparator (all on window.BasketballUI). */\n  children?: React.ReactNode;",
+    "Separator": "/** Axis of the separator. */\n  orientation?: 'horizontal' | 'vertical';\n  /** When true (default) the separator is purely visual (aria-hidden). */\n  decorative?: boolean;\n  className?: string;",
+    "Alert": "/** Visual style variant. */\n  variant?: 'default' | 'destructive';\n  /** Typically an optional icon plus AlertTitle and AlertDescription. */\n  children?: React.ReactNode;\n  className?: string;\n  /** Compose with AlertTitle and AlertDescription (on window.BasketballUI). */",
+    "Card": "/** Compose with CardHeader, CardTitle, CardDescription, CardContent, CardFooter (all on window.BasketballUI). */\n  children?: React.ReactNode;\n  className?: string;\n  /** Also accepts all standard <div> HTML attributes. */",
+    "YearSelector": "/** Years available to pick from (rendered most-recent first). */\n  availableYears: number[];\n  /** Currently selected year. */\n  selectedYear: number;\n  /** Called with the newly selected year. */\n  onYearChange: (year: number) => void;\n  /** When set and not the selected year, shows a \"Best Year\" shortcut; when equal to selectedYear, shows a \"Peak Season\" badge. */\n  bestYear?: number;\n  className?: string;"
+  },
+  "overrides": {
+    "Select": { "cardMode": "single", "viewport": "320x360", "primaryStory": "PositionMenu" },
+    "Alert": { "cardMode": "column" }
+  }
+}
